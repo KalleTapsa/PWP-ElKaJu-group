@@ -1,5 +1,5 @@
 # PWP SPRING 2026
-# PROJECT NAME
+# Peculiar Places
 # Group information
 * Jussi Saariniemi jsaarini20@student.oulu.fi
 * Kalle Tapio ktapio21@student.oulu.fi
