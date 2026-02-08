@@ -24,15 +24,18 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    places = db.relationship("Place", back_populates="user")
-    reviews = db.relationship("Review", back_populates="user")
-    images = db.relationship("Image", back_populates="user")
+    places = db.relationship("Place", cascade="all, delete-orphan", back_populates="user")
+    reviews = db.relationship("Review", cascade="all, delete-orphan", back_populates="user")
+    images = db.relationship("Image", cascade="all, delete-orphan", back_populates="user")
+    reports_place = db.relationship("ReportPlace", cascade="all, delete-orphan", back_populates="user")
+    reports_review = db.relationship("ReportReview", cascade="all, delete-orphan", back_populates="user")
+    reports_image = db.relationship("ReportImage", cascade="all, delete-orphan", back_populates="user")
 
 class Place(db.Model):
     __tablename__ = "places"
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.String(512))
@@ -45,47 +48,56 @@ class Place(db.Model):
     longitude = db.Column(db.Numeric(9, 6), nullable=False)
 
     application = db.Column(db.String(64))
-    trust_score = db.Column(db.Numeric, default=4.0)
+    trust_score = db.Column(db.Numeric(3,2), default=4.0)
 
     user = db.relationship("User", back_populates="places")
-    reviews = db.relationship("Review", back_populates="place")
-    images = db.relationship("Image", back_populates="place")
+    reviews = db.relationship("Review", cascade="all, delete-orphan", back_populates="place")
+    images = db.relationship("Image", cascade="all, delete-orphan", back_populates="place")
+
+    reports_place = db.relationship("ReportPlace", cascade="all, delete-orphan", back_populates="place")
 
 class Review(db.Model):
     __tablename__ = "reviews"
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     place_id = db.Column(db.Integer, db.ForeignKey("places.id", ondelete="CASCADE"), nullable=False)
 
     rating = db.Column(db.Integer, nullable=False)
     text = db.Column(db.String(512))
     timestamp = db.Column(db.DateTime, default=lambda: datetime.now(datetime.timezone.utc))
-    trust_score = db.Column(db.Numeric, default=4.0)
+    trust_score = db.Column(db.Numeric(3,2), default=4.0)
 
     user = db.relationship("User", back_populates="reviews")
     place = db.relationship("Place", back_populates="reviews")
+
+    reports_review = db.relationship("ReportReview", cascade="all, delete-orphan", back_populates="review")
 
 class Image(db.Model):
     __tablename__ = "images"
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     place_id = db.Column(db.Integer, db.ForeignKey("places.id", ondelete="CASCADE"), nullable=False)
 
     image_path = db.Column(db.String(255), nullable=False)
     description = db.Column(db.String(512))
     timestamp = db.Column(db.DateTime, default=lambda: datetime.now(datetime.timezone.utc))
-    trust_score = db.Column(db.Numeric, default=4.0)
+    trust_score = db.Column(db.Numeric(3,2), default=4.0)
     
     user = db.relationship("User", back_populates="images")
     place = db.relationship("Place", back_populates="images")
 
+    reports_image = db.relationship("ReportImage", cascade="all, delete-orphan", back_populates="image")
+
 class ReportPlace(db.Model):
     __tablename__ = "reports_place"
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "place_id"),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     place_id = db.Column(db.Integer, db.ForeignKey("places.id", ondelete="CASCADE"), nullable=False)
 
     report_type = db.Column(db.Enum(ReportType), nullable=False)
@@ -96,9 +108,12 @@ class ReportPlace(db.Model):
 
 class ReportReview(db.Model):
     __tablename__ = "reports_review"
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "review_id"),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     review_id = db.Column(db.Integer, db.ForeignKey("reviews.id", ondelete="CASCADE"), nullable=False)
 
     report_type = db.Column(db.Enum(ReportType), nullable=False)
@@ -109,9 +124,12 @@ class ReportReview(db.Model):
 
 class ReportImage(db.Model):
     __tablename__ = "reports_image"
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "image_id"),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     image_id = db.Column(db.Integer, db.ForeignKey("images.id", ondelete="CASCADE"), nullable=False)
 
     report_type = db.Column(db.Enum(ReportType), nullable=False)
