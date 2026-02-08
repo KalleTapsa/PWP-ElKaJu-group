@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 app = Flask(__name__, static_folder="static")
@@ -65,7 +65,7 @@ class Review(db.Model):
 
     rating = db.Column(db.Integer, nullable=False)
     text = db.Column(db.String(512))
-    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(datetime.timezone.utc))
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     trust_score = db.Column(db.Numeric(3,2), default=4.0)
 
     user = db.relationship("User", back_populates="reviews")
@@ -82,7 +82,7 @@ class Image(db.Model):
 
     image_path = db.Column(db.String(255), nullable=False)
     description = db.Column(db.String(512))
-    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(datetime.timezone.utc))
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     trust_score = db.Column(db.Numeric(3,2), default=4.0)
     
     user = db.relationship("User", back_populates="images")
@@ -102,7 +102,7 @@ class ReportPlace(db.Model):
     place_id = db.Column(db.Integer, db.ForeignKey("places.id", ondelete="CASCADE"), nullable=False)
 
     report_type = db.Column(db.Integer, nullable=False)
-    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(datetime.timezone.utc))
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     user = db.relationship("User", back_populates="reports_place")
     place = db.relationship("Place", back_populates="reports_place")
@@ -119,7 +119,7 @@ class ReportReview(db.Model):
     review_id = db.Column(db.Integer, db.ForeignKey("reviews.id", ondelete="CASCADE"), nullable=False)
 
     report_type = db.Column(db.Integer, nullable=False)
-    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(datetime.timezone.utc))
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     user = db.relationship("User", back_populates="reports_review")
     review = db.relationship("Review", back_populates="reports_review")
@@ -136,7 +136,7 @@ class ReportImage(db.Model):
     image_id = db.Column(db.Integer, db.ForeignKey("images.id", ondelete="CASCADE"), nullable=False)
 
     report_type = db.Column(db.Integer, nullable=False)
-    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(datetime.timezone.utc))
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     user = db.relationship("User", back_populates="reports_image")
     image = db.relationship("Image", back_populates="reports_image")
@@ -265,7 +265,7 @@ def create_report_place(user_id, place_id, report_type: ReportType):
     report = ReportPlace.query.filter_by(user_id=user_id, place_id=place_id).first()
     if report:
         report.report_type = report_value
-        report.timestamp = datetime.now(datetime.timezone.utc)
+        report.timestamp = datetime.now(timezone.utc)
     else:
         report = ReportPlace(
             user_id=user_id,
@@ -294,7 +294,7 @@ def create_report_review(user_id, review_id, report_type: ReportType):
     report = ReportReview.query.filter_by(user_id=user_id, review_id=review_id).first()
     if report:
         report.report_type = report_value
-        report.timestamp = datetime.now(datetime.timezone.utc)
+        report.timestamp = datetime.now(timezone.utc)
     else:
         report = ReportReview(
             user_id=user_id,
@@ -323,7 +323,7 @@ def create_report_image(user_id, image_id, report_type: ReportType):
     report = ReportImage.query.filter_by(user_id=user_id, image_id=image_id).first()
     if report:
         report.report_type = report_value
-        report.timestamp = datetime.now(datetime.timezone.utc)
+        report.timestamp = datetime.now(timezone.utc)
     else:
         report = ReportImage(
             user_id=user_id,
