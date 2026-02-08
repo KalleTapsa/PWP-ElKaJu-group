@@ -24,6 +24,6 @@ __Database Configuration:__
 
 
 __Population Script:__
-
+[setup_and_populate.py](https://github.com/user-attachments/files/25161808/setup_and_populate.py)
 
 
