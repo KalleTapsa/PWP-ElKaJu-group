@@ -94,13 +94,14 @@ class ReportPlace(db.Model):
     __tablename__ = "reports_place"
     __table_args__ = (
         db.UniqueConstraint("user_id", "place_id"),
+        db.CheckConstraint("report_type IN (1, 2, 3)", name="check_report_place_type"),
     )
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     place_id = db.Column(db.Integer, db.ForeignKey("places.id", ondelete="CASCADE"), nullable=False)
 
-    report_type = db.Column(db.Enum(ReportType), nullable=False)
+    report_type = db.Column(db.Integer, nullable=False)
     timestamp = db.Column(db.DateTime, default=lambda: datetime.now(datetime.timezone.utc))
 
     user = db.relationship("User", back_populates="reports_place")
@@ -110,13 +111,14 @@ class ReportReview(db.Model):
     __tablename__ = "reports_review"
     __table_args__ = (
         db.UniqueConstraint("user_id", "review_id"),
+        db.CheckConstraint("report_type IN (1, 2, 3)", name="check_report_review_type"),
     )
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     review_id = db.Column(db.Integer, db.ForeignKey("reviews.id", ondelete="CASCADE"), nullable=False)
 
-    report_type = db.Column(db.Enum(ReportType), nullable=False)
+    report_type = db.Column(db.Integer, nullable=False)
     timestamp = db.Column(db.DateTime, default=lambda: datetime.now(datetime.timezone.utc))
 
     user = db.relationship("User", back_populates="reports_review")
@@ -126,13 +128,14 @@ class ReportImage(db.Model):
     __tablename__ = "reports_image"
     __table_args__ = (
         db.UniqueConstraint("user_id", "image_id"),
+        db.CheckConstraint("report_type IN (1, 2, 3)", name="check_report_image_type"),
     )
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     image_id = db.Column(db.Integer, db.ForeignKey("images.id", ondelete="CASCADE"), nullable=False)
 
-    report_type = db.Column(db.Enum(ReportType), nullable=False)
+    report_type = db.Column(db.Integer, nullable=False)
     timestamp = db.Column(db.DateTime, default=lambda: datetime.now(datetime.timezone.utc))
 
     user = db.relationship("User", back_populates="reports_image")
@@ -256,19 +259,23 @@ def get_report_places_by_place(place_id):
 def get_report_places_by_user(user_id):
     return ReportPlace.query.filter_by(user_id=user_id).all()
 
-def create_report_place(user_id, place_id, report_type):
+def create_report_place(user_id, place_id, report_type: ReportType):
+    report_value = report_type.value
+
     report = ReportPlace.query.filter_by(user_id=user_id, place_id=place_id).first()
     if report:
-        report.report_type = report_type
+        report.report_type = report_value
         report.timestamp = datetime.now(datetime.timezone.utc)
     else:
-        report = ReportPlace(user_id=user_id, place_id=place_id, report_type=report_type)
+        report = ReportPlace(
+            user_id=user_id,
+            place_id=place_id,
+            report_type=report_value
+        )
         db.session.add(report)
 
     db.session.commit()
-
     recalculate_place_trust_score(place_id)
-
     return report
 
 # Report review
@@ -281,19 +288,23 @@ def get_report_reviews_by_review(review_id):
 def get_report_reviews_by_user(user_id):
     return ReportReview.query.filter_by(user_id=user_id).all()
 
-def create_report_review(user_id, review_id, report_type):
+def create_report_review(user_id, review_id, report_type: ReportType):
+    report_value = report_type.value
+
     report = ReportReview.query.filter_by(user_id=user_id, review_id=review_id).first()
     if report:
-        report.report_type = report_type
+        report.report_type = report_value
         report.timestamp = datetime.now(datetime.timezone.utc)
     else:
-        report = ReportReview(user_id=user_id, review_id=review_id, report_type=report_type)
+        report = ReportReview(
+            user_id=user_id,
+            review_id=review_id,
+            report_type=report_value
+        )
         db.session.add(report)
 
     db.session.commit()
-
     recalculate_review_trust_score(review_id)
-
     return report
 
 # Report image
@@ -306,19 +317,23 @@ def get_report_images_by_image(image_id):
 def get_report_images_by_user(user_id):
     return ReportImage.query.filter_by(user_id=user_id).all()
 
-def create_report_image(user_id, image_id, report_type):
+def create_report_image(user_id, image_id, report_type: ReportType):
+    report_value = report_type.value
+
     report = ReportImage.query.filter_by(user_id=user_id, image_id=image_id).first()
     if report:
-        report.report_type = report_type
+        report.report_type = report_value
         report.timestamp = datetime.now(datetime.timezone.utc)
     else:
-        report = ReportImage(user_id=user_id, image_id=image_id, report_type=report_type)
+        report = ReportImage(
+            user_id=user_id,
+            image_id=image_id,
+            report_type=report_value
+        )
         db.session.add(report)
 
     db.session.commit()
-
     recalculate_image_trust_score(image_id)
-
     return report
 
 # Trust score functions
@@ -330,35 +345,47 @@ def calculate_trust_score(base_score, weights):
 
 def recalculate_place_trust_score(place_id):
     reports = ReportPlace.query.filter_by(place_id=place_id).all()
-    weights = [REPORT_WEIGHTS[report.report_type] for report in reports]
+    weights = [
+        REPORT_WEIGHTS[ReportType(report.report_type)]
+        for report in reports
+    ]
+
     new_score = calculate_trust_score(4.0, weights)
-    
+
     place = Place.query.get(place_id)
     if place:
         place.trust_score = new_score
         db.session.commit()
+
     return new_score
 
 def recalculate_review_trust_score(review_id):
-    """Recalculate trust score for a review based on all its reports."""
     reports = ReportReview.query.filter_by(review_id=review_id).all()
-    weights = [REPORT_WEIGHTS[report.report_type] for report in reports]
+    weights = [
+        REPORT_WEIGHTS[ReportType(report.report_type)]
+        for report in reports
+    ]
+
     new_score = calculate_trust_score(4.0, weights)
-    
+
     review = Review.query.get(review_id)
     if review:
         review.trust_score = new_score
         db.session.commit()
-    return new_score
 
+    return new_score
 def recalculate_image_trust_score(image_id):
-    """Recalculate trust score for an image based on all its reports."""
     reports = ReportImage.query.filter_by(image_id=image_id).all()
-    weights = [REPORT_WEIGHTS[report.report_type] for report in reports]
+    weights = [
+        REPORT_WEIGHTS[ReportType(report.report_type)]
+        for report in reports
+    ]
+
     new_score = calculate_trust_score(4.0, weights)
-    
+
     image = Image.query.get(image_id)
     if image:
         image.trust_score = new_score
         db.session.commit()
+
     return new_score
