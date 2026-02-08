@@ -1,12 +1,12 @@
 # Meetings minutes
 
 ## Meeting 1.
-* **DATE:**
-* **PARTICIPANTS:**
-* **TEACHER:**
+* **DATE:** 6.2.2026
+* **PARTICIPANTS:** Kalle, July, Jussi
+* **TEACHER:** Mika Oja
 
 ### Action points
-*List here the actions points discussed with assistants*
+Main concepts part in wiki was a bit too technical. It should be more about the whole thing not specific calls used etc. For related work service analyze the API a bit more and give examples how client uses the API. In hte client and service part more needs to be told about the autonomous service.
 
 ### Notes
 *Add here notes that you consider important. This is not mandatory*
