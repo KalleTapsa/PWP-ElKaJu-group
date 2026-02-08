@@ -19,8 +19,8 @@ __Project Dependencies__
 * SQLite (default database)
 
 
-__Database Configuration:__
-[config.py](https://github.com/user-attachments/files/25161573/config.py)
+__Database Setup:__
+[models.py](https://github.com/user-attachments/files/25162038/models.py)
 
 
 __Population Script:__
