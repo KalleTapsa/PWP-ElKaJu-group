@@ -44,7 +44,7 @@ def main():
             application="mobile",
         )
 
-        print(f"Created places: {p1.id} (user {p1.user_id}), {p2.id} (user {p2.user_id})")
+        print(f"Created places: {p1.id} trust={p1.trust_score} (user {p1.user_id}), {p2.id} trust={p2.trust_score} (user {p2.user_id})")
 
         # Create reviews
         r1 = m.create_review(u2.id, p1.id, 5, text="Great coffee!")
@@ -53,13 +53,14 @@ def main():
 
         # Create image
         img1 = m.create_image(u1.id, p1.id, "static/images/cafe.jpg", description="Cafe interior")
-        print(f"Created image: {img1.id}")
+        print(f"Created image: {img1.id} path={img1.image_path} trust={img1.trust_score}")
 
         # Create reports
         rep1 = m.create_report_place(u2.id, p1.id, m.ReportType.INAPPROPRIATE)
         rep2 = m.create_report_review(u1.id, r1.id, m.ReportType.INCORRECT)
         rep3 = m.create_report_image(u2.id, img1.id, m.ReportType.APPROPRIATE)
-        print(f"Created reports: place {rep1.id}, review {rep2.id}, image {rep3.id}")
+        rep4 = m.create_report_place(u1.id, p2.id, m.ReportType.APPROPRIATE)
+        print(f"Created reports: place {rep1.id}, review {rep2.id}, image {rep3.id}, place {rep4.id}")
 
         # Query and show stored data
         places = m.get_all_places()
