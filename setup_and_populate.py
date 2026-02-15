@@ -1,5 +1,5 @@
 import os
-from database import models as m
+from PeculiarPlaces.database import models as m
 
 
 def main():
