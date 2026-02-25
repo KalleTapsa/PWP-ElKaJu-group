@@ -24,7 +24,7 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    places = db.relationship("Place", cascade="all, delete-orphan", back_populates="user")
+    places = db.relationship("Place", back_populates="user")
     reviews = db.relationship("Review", cascade="all, delete-orphan", back_populates="user")
     images = db.relationship("Image", cascade="all, delete-orphan", back_populates="user")
     reports_place = db.relationship("ReportPlace", cascade="all, delete-orphan", back_populates="user")
@@ -35,7 +35,7 @@ class Place(db.Model):
     __tablename__ = "places"
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
 
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.String(512))
