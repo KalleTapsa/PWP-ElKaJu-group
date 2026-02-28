@@ -1,5 +1,7 @@
-from flask_restful import Api
+from flask import Blueprint
+from flask_restful import Resource, Api
 from models import app, db
+<<<<<<< Updated upstream
 from resources.place import PlaceCollection, PlaceItem, PlacesByUser
 from resources.review import ReviewCollection, ReviewById, AllPlaceReviews, ReviewsByUser
 from resources.report import (
@@ -42,3 +44,18 @@ if __name__ == "__main__":
     with app.app_context():
         db.create_all()
     app.run(debug=True)
+=======
+
+api_bp = Blueprint('api', __name__, url_prefix='/api')
+api = Api(api_bp, version="1.0", title="PeculiarPlaces API")
+
+from PeculiarPlaces.resources.image import
+from PeculiarPlaces.resources.place import PlaceCollection, PlaceItem, PlacesByUser
+from PeculiarPlaces.resources.report import
+from PeculiarPlaces.resources.review import
+from PeculiarPlaces.resources.user import 
+
+api.add_resource(PlaceCollection, "/api/places/")
+api.add_resource(PlaceItem, "/api/places/<place:place>/")
+api.add_resource(PlacesByUser, "/api/users/<int:user_id>/places/")
+>>>>>>> Stashed changes
