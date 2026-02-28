@@ -2,11 +2,20 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timezone
 from enum import Enum
+import sqlite3
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
 
 app = Flask(__name__, static_folder="static")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///development.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
+
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
 
 class ReportType(Enum):
     INCORRECT = 1
