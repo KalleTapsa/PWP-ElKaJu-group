@@ -1,13 +1,15 @@
 from datetime import datetime
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify, make_response, current_app
 from flask_restful import Api, Resource
 from werkzeug.routing import BaseConverter
 from werkzeug.exceptions import NotFound, BadRequest
-from models import (
-    app, db, Image, 
-    get_images_by_place, 
-    get_images_by_user, create_image, delete_image
-)
+from werkzeug.utils import secure_filename
+import os
+
+from ..models import Image 
+from ..utils import get_images_by_place, get_images_by_user, create_image, delete_image
+from .. import db
+
 
 class ImageConverter(BaseConverter):
     def to_python(self, value):
@@ -19,7 +21,7 @@ class ImageConverter(BaseConverter):
     def to_url(self, value):
         return str(value.id)
 
-app.url_map.converters['image'] = ImageConverter
+current_app.url_map.converters['image'] = ImageConverter
 
 class ImageCollection(Resource):
 #    def get(self):
@@ -31,27 +33,32 @@ class ImageCollection(Resource):
        # application = request.args.get("application", None, type=str)
 
     def post(self):
-        """Create a new image"""
-        if request.content_type != 'application/json':
-            return make_response(jsonify({"error": "Request content type must be JSON"}), 415)
+        """Upload and create a new image"""
+        if 'file' not in request.files:
+            return {"error": "No file provided"}, 400
 
-        required_fields = ["imagepath", "timestamp"]
-        if not all(field in request.json for field in required_fields):
-            raise BadRequest(description=f"Missing required fields: {required_fields}")
+        file = request.files['file']
 
-        try:
-            image = create_image(
-                user_id=request.json.get("user_id"),
-                place_id=request.json.get("place_id"),
-                imagepath=request.json["imagepath"],
-                timestamp=request.json["timestamp"],
-                description=request.json.get("description"),
-                application=request.json.get("application")
-            )
-            location_url = f'/api/images/{image.id}/'
-            return make_response(jsonify({"id": image.id, "message": "Image created successfully"}), 201)
-        except Exception as e:
-            raise BadRequest(description=str(e))
+        if file.filename == '':
+            return {"error": "Empty filename"}, 400
+        
+        filename = secure_filename(file.filename)
+
+        upload_folder = current_app.config["UPLOAD_FOLDER"]
+        filepath = os.path.join(upload_folder, filename)
+        file.save(filepath)
+
+        image = create_image(
+            user_id=request.form.get("user_id"),
+            place_id=request.form.get("place_id"),
+            image_path=f"uploads/{filename}",
+            description=request.form.get("description")
+        )
+
+        return {
+            "id": image.id,
+            "message": "Image uploaded successfully"
+        }, 201
 
 class ImageItem(Resource):
     def get(self, image):

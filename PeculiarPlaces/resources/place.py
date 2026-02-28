@@ -1,12 +1,15 @@
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify, make_response, current_app
 from flask_restful import Api, Resource
 from werkzeug.routing import BaseConverter
 from werkzeug.exceptions import NotFound, BadRequest
-from models import (
-    app, db, Place, 
+from ..models import (
+    Place, 
+)
+from ..utils import (
     get_all_places, get_places_by_category, 
     get_places_by_application, get_places_by_user, create_place, delete_place
 )
+from .. import db
 
 
 class PlaceConverter(BaseConverter):
@@ -19,7 +22,7 @@ class PlaceConverter(BaseConverter):
     def to_url(self, value):
         return str(value.id)
 
-app.url_map.converters['place'] = PlaceConverter
+current_app.url_map.converters['place'] = PlaceConverter
 
 class PlaceCollection(Resource):
     def get(self):

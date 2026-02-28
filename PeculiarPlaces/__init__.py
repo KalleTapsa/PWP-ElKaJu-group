@@ -13,6 +13,8 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['CACHE_TYPE'] = 'FileSystemCache'
     app.config['CACHE_DIR'] = os.path.join(app.instance_path, 'cache')
+    app.config['UPLOAD_FOLDER'] = os.path.join(app.instance_path, 'uploads')
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
     try:
         os.makedirs(app.instance_path)
@@ -22,9 +24,9 @@ def create_app():
     db.init_app(app)
     cache.init_app(app)
 
-    from . import api
+    from .api import api_bp
     from . import models
     app.cli.add_command(models.init_db_command)
-    app.register_blueprint(api.api_bp)
+    app.register_blueprint(api_bp)
 
     return app

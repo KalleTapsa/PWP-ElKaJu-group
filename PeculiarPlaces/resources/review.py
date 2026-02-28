@@ -1,11 +1,14 @@
-from flask import request, jsonify, make_response
+from flask import request, jsonify, make_response, current_app
 from flask_restful import Resource
 from werkzeug.exceptions import NotFound, BadRequest
 from models import (
-    app, db, Review,
+    Review
+)
+from ..utils import (
     get_review_by_id, get_reviews_by_place, get_reviews_by_user,
     create_review, delete_review
 )
+from .. import db
 
 class ReviewCollection(Resource):
     def post(self):
