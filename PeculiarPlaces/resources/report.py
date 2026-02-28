@@ -1,10 +1,8 @@
 from flask import request, jsonify, make_response, current_app
 from flask_restful import Resource
 from werkzeug.exceptions import NotFound, BadRequest
-from ..models import (
-    ReportType
-)
 from ..utils import (
+    ReportType,
     get_report_place_by_id, get_report_places_by_place, get_report_places_by_user,
     get_report_review_by_id, get_report_reviews_by_review, get_report_reviews_by_user,
     get_report_image_by_id, get_report_images_by_image, get_report_images_by_user,

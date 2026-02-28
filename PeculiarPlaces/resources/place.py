@@ -22,8 +22,6 @@ class PlaceConverter(BaseConverter):
     def to_url(self, value):
         return str(value.id)
 
-current_app.url_map.converters['place'] = PlaceConverter
-
 class PlaceCollection(Resource):
     def get(self):
         """Get all places with optional filtering"""

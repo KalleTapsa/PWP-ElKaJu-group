@@ -1,7 +1,7 @@
 from flask import request, jsonify, make_response, current_app
 from flask_restful import Resource
 from werkzeug.exceptions import NotFound, BadRequest
-from models import (
+from ..models import (
     Review
 )
 from ..utils import (
