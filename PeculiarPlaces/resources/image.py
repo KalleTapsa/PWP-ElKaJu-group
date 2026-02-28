@@ -21,8 +21,6 @@ class ImageConverter(BaseConverter):
     def to_url(self, value):
         return str(value.id)
 
-current_app.url_map.converters['image'] = ImageConverter
-
 class ImageCollection(Resource):
 #    def get(self):
   #      """Get all images with optional filtering"""
