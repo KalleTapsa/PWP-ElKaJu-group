@@ -3,7 +3,8 @@ from flask_restful import Api, Resource
 from werkzeug.routing import BaseConverter
 from werkzeug.exceptions import NotFound, BadRequest
 from ..models import (
-    Place, 
+    Place,
+    User, 
 )
 from ..utils import (
     get_all_places, get_places_by_category, 
@@ -61,8 +62,13 @@ class PlaceCollection(Resource):
             raise BadRequest(description=f"Missing required fields: {required_fields}")
 
         try:
+            user_id = request.json.get("user_id")
+            if not user_id:
+                raise BadRequest(description="Missing user_id in request body")
+            if not User.query.get(user_id):
+                raise NotFound(description="User not found")
             place = create_place(
-                user_id=request.json.get("user_id"),
+                user_id=user_id,
                 name=request.json["name"],
                 latitude=float(request.json["latitude"]),
                 longitude=float(request.json["longitude"]),
@@ -122,7 +128,7 @@ class PlaceItem(Resource):
     def delete(self, place):
         """Delete a place"""
         delete_place(place.id)
-        return make_response(jsonify({"message": "Place deleted successfully"}), 204)
+        return make_response(jsonify({"message": "Place deleted successfully"}), 200)
 
 class PlacesByUser(Resource):
     def get(self, user_id):

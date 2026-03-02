@@ -40,7 +40,8 @@ class Place(db.Model):
     longitude = db.Column(db.Numeric(9, 6), nullable=False)
 
     application = db.Column(db.String(64))
-    trust_score = db.Column(db.Numeric(3,2), default=4.0)
+    # 
+    trust_score = db.Column(db.Numeric(4,3), default=4.0)
 
     user = db.relationship("User", back_populates="places")
     reviews = db.relationship("Review", cascade="all, delete-orphan", back_populates="place")
@@ -58,7 +59,7 @@ class Review(db.Model):
     rating = db.Column(db.Integer, nullable=False)
     text = db.Column(db.String(512))
     timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-    trust_score = db.Column(db.Numeric(3,2), default=4.0)
+    trust_score = db.Column(db.Numeric(4,3), default=4.0)
 
     user = db.relationship("User", back_populates="reviews")
     place = db.relationship("Place", back_populates="reviews")
@@ -75,7 +76,7 @@ class Image(db.Model):
     image_path = db.Column(db.String(255), nullable=False)
     description = db.Column(db.String(512))
     timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-    trust_score = db.Column(db.Numeric(3,2), default=4.0)
+    trust_score = db.Column(db.Numeric(4,3), default=4.0)
     
     user = db.relationship("User", back_populates="images")
     place = db.relationship("Place", back_populates="images")
