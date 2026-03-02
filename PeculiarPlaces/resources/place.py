@@ -1,26 +1,12 @@
-from flask import Flask, request, jsonify, make_response, current_app
+from flask import Flask, request, jsonify, make_response
 from flask_restful import Api, Resource
 from werkzeug.routing import BaseConverter
 from werkzeug.exceptions import NotFound, BadRequest
-from ..models import (
-    Place, 
-)
 from ..utils import (
     get_all_places, get_places_by_category, 
     get_places_by_application, get_places_by_user, create_place, delete_place
 )
 from .. import db
-
-
-class PlaceConverter(BaseConverter):
-    def to_python(self, value):
-        db_place = Place.query.filter_by(id=value).first()
-        if db_place is None:
-            raise NotFound
-        return db_place
-        
-    def to_url(self, value):
-        return str(value.id)
 
 class PlaceCollection(Resource):
     def get(self):
@@ -61,8 +47,13 @@ class PlaceCollection(Resource):
             raise BadRequest(description=f"Missing required fields: {required_fields}")
 
         try:
+            user_id = request.json.get("user_id")
+            if not user_id:
+                raise BadRequest(description="Missing user_id in request body")
+            if not User.query.get(user_id):
+                raise NotFound(description="User not found")
             place = create_place(
-                user_id=request.json.get("user_id"),
+                user_id=user_id,
                 name=request.json["name"],
                 latitude=float(request.json["latitude"]),
                 longitude=float(request.json["longitude"]),
@@ -122,7 +113,7 @@ class PlaceItem(Resource):
     def delete(self, place):
         """Delete a place"""
         delete_place(place.id)
-        return make_response(jsonify({"message": "Place deleted successfully"}), 204)
+        return make_response(jsonify({"message": "Place deleted successfully"}), 200)
 
 class PlacesByUser(Resource):
     def get(self, user_id):

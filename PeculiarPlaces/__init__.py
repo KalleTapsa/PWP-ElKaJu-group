@@ -24,6 +24,10 @@ def create_app():
     db.init_app(app)
     cache.init_app(app)
 
+    # Register converter BEFORE blueprint
+    from .utils import PlaceConverter
+    app.url_map.converters['place'] = PlaceConverter
+
     from .api import api_bp
     from . import models
     app.cli.add_command(models.init_db_command)

@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
 from enum import Enum
+from werkzeug.routing import BaseConverter
 from . import db
+from werkzeug.exceptions import NotFound
 from .models import (
     User, Place, Review, Image,
     ReportPlace, ReportReview, ReportImage
@@ -17,6 +19,16 @@ REPORT_WEIGHTS = {
     ReportType.INCORRECT: -0.4,
     ReportType.INAPPROPRIATE: -0.8,
 }
+
+class PlaceConverter(BaseConverter):
+    def to_python(self, value):
+        db_place = Place.query.filter_by(id=value).first()
+        if db_place is None:
+            raise NotFound
+        return db_place
+        
+    def to_url(self, value):
+        return str(value.id)
 
 # User
 def get_user_by_id(user_id):

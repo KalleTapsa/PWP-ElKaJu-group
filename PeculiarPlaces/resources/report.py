@@ -1,4 +1,4 @@
-from flask import request, jsonify, make_response, current_app
+from flask import request, jsonify, make_response
 from flask_restful import Resource
 from werkzeug.exceptions import NotFound, BadRequest
 from ..utils import (
@@ -8,7 +8,6 @@ from ..utils import (
     get_report_image_by_id, get_report_images_by_image, get_report_images_by_user,
     create_report_place, create_report_review, create_report_image
 )
-from .. import db
 
 # Report Place Resources
 class ReportPlaceCollection(Resource):
