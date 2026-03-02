@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "PeculiarPlaces"
+version = "0.1.0"
+dependencies = [
+    "flask",
+    "flask-restful",
+    "flask-sqlalchemy",
+    "flask-caching",
+    "flask-api-key",
+]

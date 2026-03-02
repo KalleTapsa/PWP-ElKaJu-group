@@ -10,9 +10,13 @@ from .resources.report import (
 from .resources.image import (
     ImageCollection, ImageItem, ImagesByUser
 )
+from .resources.user import Users
 
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 api = Api(api_bp)
+
+# User endpoints
+api.add_resource(Users, "/users/", "/users/<int:user_id>/")
 
 # Place endpoints
 api.add_resource(Places, "/places/")

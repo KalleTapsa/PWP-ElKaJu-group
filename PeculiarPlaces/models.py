@@ -1,3 +1,5 @@
+import secrets
+
 from flask.cli import with_appcontext
 import click
 from datetime import datetime, timezone
@@ -15,6 +17,8 @@ class User(db.Model):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
+    api_key = db.Column(db.String(64), unique=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc)) 
 
     places = db.relationship("Place", back_populates="user")
     reviews = db.relationship("Review", cascade="all, delete-orphan", back_populates="user")

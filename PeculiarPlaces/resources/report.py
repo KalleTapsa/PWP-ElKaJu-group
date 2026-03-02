@@ -1,4 +1,4 @@
-from flask import request, jsonify, make_response
+from flask import request, jsonify, make_response, g
 from flask_restful import Resource
 from werkzeug.exceptions import NotFound, BadRequest
 from ..utils import (
@@ -8,9 +8,14 @@ from ..utils import (
     get_report_image_by_id, get_report_images_by_image, get_report_images_by_user,
     create_report_place, create_report_review, create_report_image
 )
+from ..authentication import require_api_key, require_ownership
 
 # Report Place Resources
 class ReportPlaceById(Resource):
+    method_decorators = {
+        "get": [],
+    }
+
     def get(self, report_id):
         """Get a specific place report by its ID"""
         report = get_report_place_by_id(report_id)
@@ -25,6 +30,11 @@ class ReportPlaceById(Resource):
         }, 200
 
 class AllPlaceReports(Resource):
+    method_decorators = {
+        "get": [],
+        "post": [require_api_key]
+    }
+
     def get(self, place_id):
         """Get all reports for a specific place"""
         reports = get_report_places_by_place(place_id)
@@ -48,7 +58,7 @@ class AllPlaceReports(Resource):
                 415
             )
         # Only user_id and report_type are required, place_id comes from URL
-        required_fields = ["user_id", "report_type"]
+        required_fields = ["report_type"]
         if not request.json or not all(field in request.json for field in required_fields):
             raise BadRequest(description=f"Missing required fields: {required_fields}")
 
@@ -56,7 +66,7 @@ class AllPlaceReports(Resource):
             report_type = ReportType(request.json["report_type"])
 
             report = create_report_place(
-                user_id=request.json["user_id"],
+                user_id=g.current_user.id,
                 place_id=place_id,  # comes from URL
                 report_type=report_type
             )
@@ -75,6 +85,10 @@ class AllPlaceReports(Resource):
             raise BadRequest(description=str(e))
 
 class ReportPlaceByUser(Resource):
+    method_decorators = {
+        "get": [],
+    }
+
     def get(self, user_id):
         """Get all place reports by a specific user"""
         reports = get_report_places_by_user(user_id)
@@ -91,6 +105,10 @@ class ReportPlaceByUser(Resource):
 
 # Report Review Resources
 class ReportReviewById(Resource):
+    method_decorators = {
+        "get": [],
+    }
+
     def get(self, report_id):
         """Get a specific review report by its ID"""
         report = get_report_review_by_id(report_id)
@@ -105,6 +123,11 @@ class ReportReviewById(Resource):
         }, 200
 
 class AllReviewReports(Resource):
+    method_decorators = {
+        "get": [],
+        "post": [require_api_key]
+    }
+
     def get(self, review_id):
         """Get all reports for a specific review"""
         reports = get_report_reviews_by_review(review_id)
@@ -129,7 +152,7 @@ class AllReviewReports(Resource):
             )
 
         # Only user_id and report_type are required; place_id/review_id come from URL
-        required_fields = ["user_id", "report_type"]
+        required_fields = ["report_type"]
         if not request.json or not all(field in request.json for field in required_fields):
             raise BadRequest(description=f"Missing required fields: {required_fields}")
 
@@ -142,7 +165,7 @@ class AllReviewReports(Resource):
              #   raise BadRequest(description="Review not found for this place")
 
             report = create_report_review(
-                user_id=request.json["user_id"],
+                user_id=g.current_user.id,
                 review_id=review_id,
                 report_type=report_type
             )
@@ -161,6 +184,10 @@ class AllReviewReports(Resource):
             raise BadRequest(description=str(e))
 
 class ReportReviewByUser(Resource):
+    method_decorators = {
+        "get": [],
+    }
+
     def get(self, user_id):
         """Get all review reports by a specific user"""
         reports = get_report_reviews_by_user(user_id)
@@ -177,6 +204,10 @@ class ReportReviewByUser(Resource):
 
 # Report Image Resources
 class ReportImageById(Resource):
+    method_decorators = {
+        "get": [],
+    }
+
     def get(self, report_id):
         """Get a specific image report by its ID"""
         report = get_report_image_by_id(report_id)
@@ -191,6 +222,11 @@ class ReportImageById(Resource):
         }, 200
 
 class AllImageReports(Resource):
+    method_decorators = {
+        "get": [],
+        "post": [require_api_key]
+    }
+
     def get(self, image_id):
         """Get all reports for a specific image"""
         reports = get_report_images_by_image(image_id)
@@ -215,7 +251,7 @@ class AllImageReports(Resource):
             )
 
         # Only user_id and report_type are required; place_id/image_id come from URL
-        required_fields = ["user_id", "report_type"]
+        required_fields = ["report_type"]
         if not request.json or not all(field in request.json for field in required_fields):
             raise BadRequest(description=f"Missing required fields: {required_fields}")
 
@@ -223,12 +259,14 @@ class AllImageReports(Resource):
             report_type = ReportType(request.json["report_type"])
 
             # Optional: validate that image belongs to place
+            from ..utils import get_image_by_id
             image = get_image_by_id(image_id)
+            
             if not image or image.place_id != place_id:
                 raise BadRequest(description="Image not found for this place")
 
             report = create_report_image(
-                user_id=request.json["user_id"],
+                user_id=g.current_user.id,
                 image_id=image_id,
                 report_type=report_type
             )
@@ -247,6 +285,10 @@ class AllImageReports(Resource):
             raise BadRequest(description=str(e))
 
 class ReportImageByUser(Resource):
+    method_decorators = {
+        "get": [],
+    }
+
     def get(self, user_id):
         """Get all image reports by a specific user"""
         reports = get_report_images_by_user(user_id)

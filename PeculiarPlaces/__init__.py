@@ -1,11 +1,12 @@
 import os
-#from flasgger import Swagger
 from flask import Flask
 from flask_caching import Cache
 from flask_sqlalchemy import SQLAlchemy
+from flask_api_key import APIKeyManager
 
 db = SQLAlchemy()
 cache = Cache()
+api_key_manager = APIKeyManager()
 
 def create_app():
     app = Flask(__name__)
@@ -13,6 +14,7 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['CACHE_TYPE'] = 'FileSystemCache'
     app.config['CACHE_DIR'] = os.path.join(app.instance_path, 'cache')
+    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "development_secret_key")
     app.config['UPLOAD_FOLDER'] = os.path.join(app.instance_path, 'uploads')
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -23,12 +25,15 @@ def create_app():
 
     db.init_app(app)
     cache.init_app(app)
+    api_key_manager.init_app(app)
 
-    # Register converter BEFORE blueprint
+    from .api_key_loader import fetch_api_key
+    api_key_manager.fetch_key(fetch_api_key)
+
     from .utils import PlaceConverter, ImageConverter
     app.url_map.converters['place'] = PlaceConverter
     app.url_map.converters["image"] = ImageConverter
-
+    
     from .api import api_bp
     from . import models
     app.cli.add_command(models.init_db_command)

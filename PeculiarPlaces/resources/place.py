@@ -1,16 +1,22 @@
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify, make_response, g
 from flask_restful import Api, Resource
 from werkzeug.routing import BaseConverter
 from werkzeug.exceptions import NotFound, BadRequest
 
-from PeculiarPlaces.models import User
+from ..models import User
 from ..utils import (
     get_all_places, get_places_by_category, 
     get_places_by_application, get_places_by_user, create_place, delete_place
 )
 from .. import db
+from ..authentication import require_api_key, require_ownership
 
 class Places(Resource):
+    method_decorators = {
+        "get": [],
+        "post": [require_api_key]
+    }
+
     def get(self):
         """Get all places with optional filtering"""
         trust_score = request.args.get("trust_score", 0, type=float)
@@ -49,13 +55,8 @@ class Places(Resource):
             raise BadRequest(description=f"Missing required fields: {required_fields}")
 
         try:
-            user_id = request.json.get("user_id")
-            if not user_id:
-                raise BadRequest(description="Missing user_id in request body")
-            if not User.query.get(user_id):
-                raise NotFound(description="User not found")
             place = create_place(
-                user_id=user_id,
+                user_id=g.current_user.id,
                 name=request.json["name"],
                 latitude=float(request.json["latitude"]),
                 longitude=float(request.json["longitude"]),
@@ -72,6 +73,12 @@ class Places(Resource):
             raise BadRequest(description=str(e))
 
 class PlaceItem(Resource):
+    method_decorators = {
+        "get": [],
+        "put": [require_api_key],
+        "delete": [require_api_key]
+    }
+
     def get(self, place):
         """Get a specific place by ID"""
         return {
@@ -91,6 +98,9 @@ class PlaceItem(Resource):
 
     def put(self, place):
         """Update a place"""
+
+        require_ownership(place.user_id)
+
         if request.content_type != 'application/json':
             return make_response(jsonify({"error": "Request content type must be JSON"}), 415)
 
@@ -114,6 +124,9 @@ class PlaceItem(Resource):
 
     def delete(self, place):
         """Delete a place"""
+
+        require_ownership(place.user_id)
+
         delete_place(place.id)
         return make_response(jsonify({"message": "Place deleted successfully"}), 200)
 

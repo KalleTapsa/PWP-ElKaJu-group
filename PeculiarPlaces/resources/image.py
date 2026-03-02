@@ -1,10 +1,14 @@
 from datetime import datetime
 import uuid
-from flask import Flask, request, jsonify, make_response, current_app, send_from_directory
+from flask import request, current_app, g
 from flask_restful import Api, Resource
 from werkzeug.routing import BaseConverter
 from werkzeug.exceptions import NotFound, BadRequest
 from werkzeug.utils import secure_filename
+from ..authentication import require_api_key, require_ownership
+from ..utils import (
+    get_images_by_place, get_images_by_user, create_image, delete_image
+)
 import os
 
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png"}
@@ -12,9 +16,12 @@ ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png"}
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
-from ..utils import get_images_by_place, get_images_by_user, create_image, delete_image
-
 class ImageCollection(Resource):
+    method_decorators = {
+        "get": [],
+        "post": [require_api_key]
+    }
+
     def get(self, place_id):
         """Get all images for a specific place"""
         images = get_images_by_place(place_id)
@@ -44,11 +51,13 @@ class ImageCollection(Resource):
         if not allowed_file(file.filename):
             return {"error": "File type not allowed. Only jpg, jpeg, and png allowed"}, 400
         
-        user_id = request.form.get("user_id")
+
         place_id = request.form.get("place_id")
 
-        if not user_id or not place_id:
+        if not g.current_user or not place_id:
             raise BadRequest(description="Missing required fields: 'user_id' and 'place_id'")
+
+        user_id = g.current_user.id
 
         try:
             ext = file.filename.rsplit(".", 1)[1].lower()
@@ -75,8 +84,18 @@ class ImageCollection(Resource):
             raise BadRequest(description=str(e))
 
 class ImageItem(Resource):
+    method_decorators = {
+        "get": [],
+        "delete": [require_api_key]
+    }
+
     def get(self, image):
         """Get image metadata including download URL"""
+        from ..utils import get_image_by_id
+        image = get_image_by_id(image.id)
+        if not image:
+            raise NotFound(description="Image not found")
+        
         return {
             "id": image.id,
             "user_id": image.user_id,
@@ -89,6 +108,13 @@ class ImageItem(Resource):
 
     def delete(self, image):
         """Delete an image and its file"""
+        from ..utils import get_image_by_id
+        image = get_image_by_id(image.id)
+        if not image:
+            raise NotFound(description="Image not found")
+        
+        require_ownership(image.user_id)
+
         upload_folder = current_app.config["UPLOAD_FOLDER"]
         file_path = os.path.join(upload_folder, image.image_path)
         if os.path.isfile(file_path):
@@ -98,6 +124,10 @@ class ImageItem(Resource):
         return {"message": "Image deleted successfully"}, 200
 
 class ImagesByUser(Resource):
+    method_decorators = {
+        "get": [],
+    }
+
     def get(self, user_id):
         """Get all images by a specific user"""
         images = get_images_by_user(user_id)
