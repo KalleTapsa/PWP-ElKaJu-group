@@ -20,6 +20,16 @@ REPORT_WEIGHTS = {
     ReportType.INAPPROPRIATE: -0.8,
 }
 
+class ImageConverter(BaseConverter):
+    def to_python(self, value):
+        db_image = Image.query.filter_by(id=value).first()
+        if db_image is None:
+            raise NotFound
+        return db_image
+        
+    def to_url(self, value):
+        return str(value.id)
+
 class PlaceConverter(BaseConverter):
     def to_python(self, value):
         db_place = Place.query.filter_by(id=value).first()

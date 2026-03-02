@@ -1,6 +1,6 @@
 from flask import Blueprint, send_from_directory, current_app
 from flask_restful import Resource, Api
-from .resources.place import PlaceCollection, PlaceConverter, PlaceItem, PlacesByUser
+from .resources.place import PlaceCollection, PlaceItem, PlacesByUser
 from .resources.review import ReviewCollection, ReviewById, AllPlaceReviews, ReviewsByUser
 from .resources.report import (
     ReportPlaceCollection, ReportPlaceById, AllPlaceReports, ReportPlaceByUser,
@@ -8,14 +8,11 @@ from .resources.report import (
     ReportImageCollection, ReportImageById, AllImageReports, ReportImageByUser
 )
 from .resources.image import (
-    ImageCollection, ImageItem, ImagesByUser, ImagesByPlace, ImageConverter
+    ImageCollection, ImageItem, ImagesByUser, ImagesByPlace
 )
 
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 api = Api(api_bp)
-
-api_bp.url_map.converters["image"] = ImageConverter
-api_bp.url_map.converters["place"] = PlaceConverter
 
 # Place endpoints
 api.add_resource(PlaceCollection, "/places/")

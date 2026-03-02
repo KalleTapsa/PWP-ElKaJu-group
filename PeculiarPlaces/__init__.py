@@ -25,8 +25,9 @@ def create_app():
     cache.init_app(app)
 
     # Register converter BEFORE blueprint
-    from .utils import PlaceConverter
+    from .utils import PlaceConverter, ImageConverter
     app.url_map.converters['place'] = PlaceConverter
+    app.url_map.converters["image"] = ImageConverter
 
     from .api import api_bp
     from . import models

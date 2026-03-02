@@ -12,20 +12,7 @@ ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png"}
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
-from ..models import Image
 from ..utils import get_images_by_place, get_images_by_user, create_image, delete_image
-from .. import db
-
-
-class ImageConverter(BaseConverter):
-    def to_python(self, value):
-        db_image = Image.query.filter_by(id=value).first()
-        if db_image is None:
-            raise NotFound
-        return db_image
-        
-    def to_url(self, value):
-        return str(value.id)
 
 class ImageCollection(Resource):
     def post(self):
