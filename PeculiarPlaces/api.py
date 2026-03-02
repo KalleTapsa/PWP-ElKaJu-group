@@ -1,8 +1,8 @@
 from flask import Blueprint, send_from_directory, current_app
 from flask_restful import Resource, Api
-from resources.place import PlaceCollection, PlaceConverter, PlaceItem, PlacesByUser
-from resources.review import ReviewCollection, ReviewById, AllPlaceReviews, ReviewsByUser
-from resources.report import (
+from .resources.place import PlaceCollection, PlaceConverter, PlaceItem, PlacesByUser
+from .resources.review import ReviewCollection, ReviewById, AllPlaceReviews, ReviewsByUser
+from .resources.report import (
     ReportPlaceCollection, ReportPlaceById, AllPlaceReports, ReportPlaceByUser,
     ReportReviewCollection, ReportReviewById, AllReviewReports, ReportReviewByUser,
     ReportImageCollection, ReportImageById, AllImageReports, ReportImageByUser
@@ -54,8 +54,5 @@ api.add_resource(ReportImageByUser, "/users/<int:user_id>/reports/images/")
 
 @api_bp.route("/uploads/<path:filename>")
 def uploaded_file(filename):
-    return send_from_directory(
-        current_app.config["UPLOAD_FOLDER"],
-        filename
-    )
+    return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename)
 
