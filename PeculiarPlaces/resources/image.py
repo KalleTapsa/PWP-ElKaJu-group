@@ -15,6 +15,22 @@ def allowed_file(filename):
 from ..utils import get_images_by_place, get_images_by_user, create_image, delete_image
 
 class ImageCollection(Resource):
+    def get(self, place_id):
+        """Get all images for a specific place"""
+        images = get_images_by_place(place_id)
+        res = [
+            {
+                "id": image.id,
+                "user_id": image.user_id,
+                "place_id": image.place_id,
+                "description": image.description,
+                "timestamp": image.timestamp.isoformat(),
+                "trust_score": float(image.trust_score),
+                "image_url": f"/api/uploads/{image.image_path}"
+            } for image in images
+        ]
+        return res, 200
+
     def post(self):
         """Upload and create a new image"""
         if 'file' not in request.files:
@@ -85,23 +101,6 @@ class ImagesByUser(Resource):
     def get(self, user_id):
         """Get all images by a specific user"""
         images = get_images_by_user(user_id)
-        res = [
-            {
-                "id": image.id,
-                "user_id": image.user_id,
-                "place_id": image.place_id,
-                "description": image.description,
-                "timestamp": image.timestamp.isoformat(),
-                "trust_score": float(image.trust_score),
-                "image_url": f"/api/uploads/{image.image_path}"
-            } for image in images
-        ]
-        return res, 200
-    
-class ImagesByPlace(Resource):
-    def get(self, place_id):
-        """Get all images for a specific place"""
-        images = get_images_by_place(place_id)
         res = [
             {
                 "id": image.id,

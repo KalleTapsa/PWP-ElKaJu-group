@@ -6,33 +6,6 @@ from ..utils import (
     create_review, delete_review
 )
 
-class ReviewCollection(Resource):
-    def post(self):
-        """Create a new review"""
-        if request.content_type != 'application/json':
-            return make_response(jsonify({"error": "Request content type must be JSON"}), 415)
-
-        required_fields = ["user_id", "place_id", "rating"]
-        if not all(field in request.json for field in required_fields):
-            raise BadRequest(description=f"Missing required fields: {required_fields}")
-
-        try:
-            rating = int(request.json["rating"])
-            if rating < 1 or rating > 5:
-                raise ValueError("Rating must be between 1 and 5")
-            
-            review = create_review(
-                user_id=request.json["user_id"],
-                place_id=request.json["place_id"],
-                rating=rating,
-                text=request.json.get("text")
-            )
-            return make_response(jsonify({"id": review.id, "message": "Review created successfully"}), 201)
-        except ValueError as e:
-            raise BadRequest(description=str(e))
-        except Exception as e:
-            raise BadRequest(description=str(e))
-
 class ReviewById(Resource):
     def get(self, review_id):
         """Get a specific review by its ID"""
@@ -57,7 +30,7 @@ class ReviewById(Resource):
         delete_review(review_id)
         return make_response(jsonify({"message": "Review deleted successfully"}), 200)
 
-class AllPlaceReviews(Resource):
+class PlaceReviews(Resource):
     def get(self, place_id):
         """Get all reviews for a specific place"""
         reviews = get_reviews_by_place(place_id)
@@ -73,6 +46,45 @@ class AllPlaceReviews(Resource):
             } for review in reviews
         ]
         return res, 200
+
+    def post(self, place_id):
+        """Create a new review for a specific place"""
+
+        if request.content_type != 'application/json':
+            return make_response(
+                jsonify({"error": "Request content type must be JSON"}), 415
+            )
+
+        required_fields = ["user_id", "rating"]
+
+        if not request.json or not all(field in request.json for field in required_fields):
+            raise BadRequest(description=f"Missing required fields: {required_fields}")
+
+        try:
+            rating = int(request.json["rating"])
+
+            if rating < 1 or rating > 5:
+                raise ValueError("Rating must be between 1 and 5")
+
+            review = create_review(
+                user_id=request.json["user_id"],
+                place_id=place_id,
+                rating=rating,
+                text=request.json.get("text")
+            )
+
+            return make_response(
+                jsonify({
+                    "id": review.id,
+                    "message": "Review created successfully"
+                }),
+                201
+            )
+
+        except ValueError as e:
+            raise BadRequest(description=str(e))
+        except Exception as e:
+            raise BadRequest(description=str(e))
 
 class ReviewsByUser(Resource):
     def get(self, user_id):

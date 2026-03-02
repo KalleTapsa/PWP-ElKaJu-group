@@ -2,13 +2,15 @@ from flask import Flask, request, jsonify, make_response
 from flask_restful import Api, Resource
 from werkzeug.routing import BaseConverter
 from werkzeug.exceptions import NotFound, BadRequest
+
+from PeculiarPlaces.models import User
 from ..utils import (
     get_all_places, get_places_by_category, 
     get_places_by_application, get_places_by_user, create_place, delete_place
 )
 from .. import db
 
-class PlaceCollection(Resource):
+class Places(Resource):
     def get(self):
         """Get all places with optional filtering"""
         trust_score = request.args.get("trust_score", 0, type=float)

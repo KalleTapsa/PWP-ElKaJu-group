@@ -10,29 +10,6 @@ from ..utils import (
 )
 
 # Report Place Resources
-class ReportPlaceCollection(Resource):
-    def post(self):
-        """Create or update a report for a place"""
-        if request.content_type != 'application/json':
-            return make_response(jsonify({"error": "Request content type must be JSON"}), 415)
-
-        required_fields = ["user_id", "place_id", "report_type"]
-        if not all(field in request.json for field in required_fields):
-            raise BadRequest(description=f"Missing required fields: {required_fields}")
-
-        try:
-            report_type = ReportType(request.json["report_type"])
-            report = create_report_place(
-                user_id=request.json["user_id"],
-                place_id=request.json["place_id"],
-                report_type=report_type
-            )
-            return make_response(jsonify({"id": report.id, "message": "Place report created/updated successfully"}), 201)
-        except ValueError:
-            raise BadRequest(description="Invalid report_type. Must be 1 (INCORRECT), 2 (INAPPROPRIATE), or 3 (APPROPRIATE)")
-        except Exception as e:
-            raise BadRequest(description=str(e))
-
 class ReportPlaceById(Resource):
     def get(self, report_id):
         """Get a specific place report by its ID"""
@@ -62,6 +39,41 @@ class AllPlaceReports(Resource):
         ]
         return res, 200
 
+    def post(self, place_id):
+        """Create or update a report for a place"""
+
+        if request.content_type != "application/json":
+            return make_response(
+                jsonify({"error": "Request content type must be JSON"}),
+                415
+            )
+        # Only user_id and report_type are required, place_id comes from URL
+        required_fields = ["user_id", "report_type"]
+        if not request.json or not all(field in request.json for field in required_fields):
+            raise BadRequest(description=f"Missing required fields: {required_fields}")
+
+        try:
+            report_type = ReportType(request.json["report_type"])
+
+            report = create_report_place(
+                user_id=request.json["user_id"],
+                place_id=place_id,  # comes from URL
+                report_type=report_type
+            )
+
+            return make_response(
+                jsonify({
+                    "id": report.id,
+                    "message": "Place report created/updated successfully"
+                }),
+                201
+            )
+
+        except ValueError:
+            raise BadRequest(description="Invalid report_type. Must be 1 (INCORRECT), 2 (INAPPROPRIATE), or 3 (APPROPRIATE)")
+        except Exception as e:
+            raise BadRequest(description=str(e))
+
 class ReportPlaceByUser(Resource):
     def get(self, user_id):
         """Get all place reports by a specific user"""
@@ -78,29 +90,6 @@ class ReportPlaceByUser(Resource):
         return res, 200
 
 # Report Review Resources
-class ReportReviewCollection(Resource):
-    def post(self):
-        """Create or update a report for a review"""
-        if request.content_type != 'application/json':
-            return make_response(jsonify({"error": "Request content type must be JSON"}), 415)
-
-        required_fields = ["user_id", "review_id", "report_type"]
-        if not all(field in request.json for field in required_fields):
-            raise BadRequest(description=f"Missing required fields: {required_fields}")
-
-        try:
-            report_type = ReportType(request.json["report_type"])
-            report = create_report_review(
-                user_id=request.json["user_id"],
-                review_id=request.json["review_id"],
-                report_type=report_type
-            )
-            return make_response(jsonify({"id": report.id, "message": "Review report created/updated successfully"}), 201)
-        except ValueError:
-            raise BadRequest(description="Invalid report_type. Must be 1 (INCORRECT), 2 (INAPPROPRIATE), or 3 (APPROPRIATE)")
-        except Exception as e:
-            raise BadRequest(description=str(e))
-
 class ReportReviewById(Resource):
     def get(self, report_id):
         """Get a specific review report by its ID"""
@@ -130,6 +119,47 @@ class AllReviewReports(Resource):
         ]
         return res, 200
 
+    def post(self, place_id, review_id):
+        """Create or update a report for a review"""
+
+        if request.content_type != "application/json":
+            return make_response(
+                jsonify({"error": "Request content type must be JSON"}),
+                415
+            )
+
+        # Only user_id and report_type are required; place_id/review_id come from URL
+        required_fields = ["user_id", "report_type"]
+        if not request.json or not all(field in request.json for field in required_fields):
+            raise BadRequest(description=f"Missing required fields: {required_fields}")
+
+        try:
+            report_type = ReportType(request.json["report_type"])
+
+            # Optional: validate that review belongs to place TODO: This adds an extra DB query, but ensures the review is valid for the place
+            #review = get_review_by_id(review_id)
+            #if not review or review.place_id != place_id:
+             #   raise BadRequest(description="Review not found for this place")
+
+            report = create_report_review(
+                user_id=request.json["user_id"],
+                review_id=review_id,
+                report_type=report_type
+            )
+
+            return make_response(
+                jsonify({
+                    "id": report.id,
+                    "message": "Review report created/updated successfully"
+                }),
+                201
+            )
+
+        except ValueError:
+            raise BadRequest(description="Invalid report_type. Must be 1 (INCORRECT), 2 (INAPPROPRIATE), or 3 (APPROPRIATE)")
+        except Exception as e:
+            raise BadRequest(description=str(e))
+
 class ReportReviewByUser(Resource):
     def get(self, user_id):
         """Get all review reports by a specific user"""
@@ -146,29 +176,6 @@ class ReportReviewByUser(Resource):
         return res, 200
 
 # Report Image Resources
-class ReportImageCollection(Resource):
-    def post(self):
-        """Create or update a report for an image"""
-        if request.content_type != 'application/json':
-            return make_response(jsonify({"error": "Request content type must be JSON"}), 415)
-
-        required_fields = ["user_id", "image_id", "report_type"]
-        if not all(field in request.json for field in required_fields):
-            raise BadRequest(description=f"Missing required fields: {required_fields}")
-
-        try:
-            report_type = ReportType(request.json["report_type"])
-            report = create_report_image(
-                user_id=request.json["user_id"],
-                image_id=request.json["image_id"],
-                report_type=report_type
-            )
-            return make_response(jsonify({"id": report.id, "message": "Image report created/updated successfully"}), 201)
-        except ValueError:
-            raise BadRequest(description="Invalid report_type. Must be 1 (INCORRECT), 2 (INAPPROPRIATE), or 3 (APPROPRIATE)")
-        except Exception as e:
-            raise BadRequest(description=str(e))
-
 class ReportImageById(Resource):
     def get(self, report_id):
         """Get a specific image report by its ID"""
@@ -197,6 +204,47 @@ class AllImageReports(Resource):
             } for report in reports
         ]
         return res, 200
+
+    def post(self, place_id, image_id):
+        """Create or update a report for an image"""
+
+        if request.content_type != "application/json":
+            return make_response(
+                jsonify({"error": "Request content type must be JSON"}),
+                415
+            )
+
+        # Only user_id and report_type are required; place_id/image_id come from URL
+        required_fields = ["user_id", "report_type"]
+        if not request.json or not all(field in request.json for field in required_fields):
+            raise BadRequest(description=f"Missing required fields: {required_fields}")
+
+        try:
+            report_type = ReportType(request.json["report_type"])
+
+            # Optional: validate that image belongs to place
+            image = get_image_by_id(image_id)
+            if not image or image.place_id != place_id:
+                raise BadRequest(description="Image not found for this place")
+
+            report = create_report_image(
+                user_id=request.json["user_id"],
+                image_id=image_id,
+                report_type=report_type
+            )
+
+            return make_response(
+                jsonify({
+                    "id": report.id,
+                    "message": "Image report created/updated successfully"
+                }),
+                201
+            )
+
+        except ValueError:
+            raise BadRequest(description="Invalid report_type. Must be 1 (INCORRECT), 2 (INAPPROPRIATE), or 3 (APPROPRIATE)")
+        except Exception as e:
+            raise BadRequest(description=str(e))
 
 class ReportImageByUser(Resource):
     def get(self, user_id):
