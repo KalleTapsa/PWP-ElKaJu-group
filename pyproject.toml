@@ -6,9 +6,12 @@ build-backend = "setuptools.build_meta"
 name = "PeculiarPlaces"
 version = "0.1.0"
 dependencies = [
-    "flask",
+    "flask==2.3.3",
     "flask-restful",
     "flask-sqlalchemy",
     "flask-caching",
     "flask-api-key",
 ]
+
+[tool.setuptools]
+packages = ["PeculiarPlaces"]
