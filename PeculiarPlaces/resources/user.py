@@ -4,6 +4,7 @@ from flask_restful import Resource
 from ..models import User
 from .. import db
 from ..authentication import require_api_key, require_ownership
+from werkzeug.security import generate_password_hash
 
 
 class Users(Resource):
@@ -15,7 +16,8 @@ class Users(Resource):
 
         #No need to check for uniqueness since the sun will explode before we get a collision with 2^256 possible keys
 
-        user = User(api_key=api_key)
+        hashed_key = generate_password_hash(api_key)
+        user = User(api_key=hashed_key)
         db.session.add(user)
         db.session.commit()
 

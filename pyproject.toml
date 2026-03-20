@@ -12,3 +12,6 @@ dependencies = [
     "flask-caching",
     "flask-api-key",
 ]
+
+[tool.setuptools]
+packages = ["PeculiarPlaces"]
