@@ -1,10 +1,7 @@
-from datetime import datetime
 import uuid
 from flask import request, current_app, g
-from flask_restful import Api, Resource
-from werkzeug.routing import BaseConverter
+from flask_restful import Resource
 from werkzeug.exceptions import NotFound, BadRequest
-from werkzeug.utils import secure_filename
 from ..authentication import require_api_key, require_ownership
 from ..utils import (
     get_images_by_place, get_images_by_user, create_image, delete_image, get_image_by_id
@@ -38,7 +35,7 @@ class ImageCollection(Resource):
         ]
         return res, 200
 
-    def post(self):
+    def post(self, place_id):
         """Upload and create a new image"""
         if 'file' not in request.files:
             return {"error": "No file provided"}, 400
@@ -50,9 +47,6 @@ class ImageCollection(Resource):
 
         if not allowed_file(file.filename):
             return {"error": "File type not allowed. Only jpg, jpeg, and png allowed"}, 400
-        
-
-        place_id = request.form.get("place_id")
 
         if not g.current_user or not place_id:
             raise BadRequest(description="Missing required fields: 'user_id' and 'place_id'")
@@ -89,12 +83,15 @@ class ImageItem(Resource):
         "delete": [require_api_key]
     }
 
-    def get(self, image):
+    def get(self, place_id, image_id):
         """Get image metadata including download URL"""
-        image = get_image_by_id(image.id)
+        image = get_image_by_id(image_id)
         if not image:
             raise NotFound(description="Image not found")
         
+        if image.place_id != place_id:
+            raise NotFound(description="Image not found")
+
         return {
             "id": image.id,
             "user_id": image.user_id,
@@ -105,12 +102,15 @@ class ImageItem(Resource):
             "image_url": f"/api/uploads/{image.image_path}"
         }, 200
 
-    def delete(self, image):
+    def delete(self, place_id, image_id):
         """Delete an image and its file"""
-        image = get_image_by_id(image.id)
+        image = get_image_by_id(image_id)
         if not image:
             raise NotFound(description="Image not found")
         
+        if image.place_id != place_id:
+            raise NotFound(description="Image not found")
+
         require_ownership(image.user_id)
 
         upload_folder = current_app.config["UPLOAD_FOLDER"]

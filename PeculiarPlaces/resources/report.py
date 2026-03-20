@@ -107,20 +107,24 @@ class AllPlaceReports(Resource):
 
 class ReportPlaceByUser(Resource):
     method_decorators = {
-        "get": []
+        "get": [require_api_key]
     }
 
-    def get(self):
-        """Get all place reports by the current authenticated user"""
-        reports = get_report_places_by_user(g.current_user.id)
+    def get(self, user_id):
+        """Get all place reports by the authenticated user."""
+        if g.current_user.id != user_id:
+            raise NotFound(description="Not found")
+
+        reports = get_report_places_by_user(user_id)
         res = [
             {
                 "id": report.id,
                 "user_id": report.user_id,
                 "place_id": report.place_id,
                 "report_type": report.report_type,
-                "timestamp": report.timestamp.isoformat()
-            } for report in reports
+                "timestamp": report.timestamp.isoformat(),
+            }
+            for report in reports
         ]
         return res, 200
 
@@ -225,11 +229,14 @@ class AllReviewReports(Resource):
 
 class ReportReviewByUser(Resource):
     method_decorators = {
-        "get": []
+        "get": [require_api_key]
     }
 
     def get(self, user_id):
-        """Get all review reports by a specific user"""
+        """Get all review reports by the authenticated user."""
+        if g.current_user.id != user_id:
+            raise NotFound(description="Not found")
+
         reports = get_report_reviews_by_user(user_id)
         res = [
             {
@@ -237,8 +244,9 @@ class ReportReviewByUser(Resource):
                 "user_id": report.user_id,
                 "review_id": report.review_id,
                 "report_type": report.report_type,
-                "timestamp": report.timestamp.isoformat()
-            } for report in reports
+                "timestamp": report.timestamp.isoformat(),
+            }
+            for report in reports
         ]
         return res, 200
 
@@ -345,11 +353,14 @@ class AllImageReports(Resource):
 
 class ReportImageByUser(Resource):
     method_decorators = {
-        "get": []
+        "get": [require_api_key]
     }
 
     def get(self, user_id):
-        """Get all image reports by a specific user"""
+        """Get all image reports by the authenticated user."""
+        if g.current_user.id != user_id:
+            raise NotFound(description="Not found")
+
         reports = get_report_images_by_user(user_id)
         res = [
             {
@@ -357,7 +368,8 @@ class ReportImageByUser(Resource):
                 "user_id": report.user_id,
                 "image_id": report.image_id,
                 "report_type": report.report_type,
-                "timestamp": report.timestamp.isoformat()
-            } for report in reports
+                "timestamp": report.timestamp.isoformat(),
+            }
+            for report in reports
         ]
         return res, 200

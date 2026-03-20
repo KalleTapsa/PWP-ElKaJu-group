@@ -1,9 +1,7 @@
-from flask import Flask, request, jsonify, make_response, g
-from flask_restful import Api, Resource
-from werkzeug.routing import BaseConverter
-from werkzeug.exceptions import NotFound, BadRequest
+from flask import request, jsonify, make_response, g
+from flask_restful import Resource
+from werkzeug.exceptions import BadRequest
 
-from ..models import User
 from ..utils import (
     get_all_places, get_places_by_category, 
     get_places_by_application, get_places_by_user, create_place, delete_place
