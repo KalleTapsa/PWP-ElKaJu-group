@@ -3,10 +3,11 @@ from flask_restful import Resource
 from werkzeug.exceptions import NotFound, BadRequest
 from ..utils import (
     ReportType,
-    get_report_place_by_id, get_report_places_by_place, get_report_places_by_user,
-    get_report_review_by_id, get_report_reviews_by_review, get_report_reviews_by_user,
-    get_report_image_by_id, get_report_images_by_image, get_report_images_by_user,
-    create_report_place, create_report_review, create_report_image
+    get_report_place_by_id, get_report_places_by_user,
+    get_report_review_by_id, get_report_reviews_by_user,
+    get_report_image_by_id, get_report_images_by_user,
+    create_report_place, create_report_review, create_report_image, get_review_by_id, get_image_by_id,
+    change_report_place, change_report_review, change_report_image
 )
 from ..authentication import require_api_key, require_ownership
 
@@ -14,6 +15,7 @@ from ..authentication import require_api_key, require_ownership
 class ReportPlaceById(Resource):
     method_decorators = {
         "get": [],
+        "put": [require_api_key]
     }
 
     def get(self, report_id):
@@ -28,29 +30,48 @@ class ReportPlaceById(Resource):
             "report_type": report.report_type,
             "timestamp": report.timestamp.isoformat()
         }, 200
+    
+    def put(self, report_id):
+        """Update a place report"""
+        if request.content_type != "application/json":
+            return make_response(
+                jsonify({"error": "Request content type must be JSON"}),
+                415
+            )
+
+        required_fields = ["report_type"]
+        if not request.json or not all(field in request.json for field in required_fields):
+            raise BadRequest(description=f"Missing required fields: {required_fields}")
+
+        try:
+            report_type = ReportType(request.json["report_type"])
+            report = get_report_place_by_id(report_id)
+            if not report:
+                raise NotFound(description="Place report not found")
+
+            require_ownership(report.user_id)
+            changedReport = change_report_place(report_id, report_type=report_type)
+        
+            return make_response(
+                jsonify({
+                    "id": changedReport.id,
+                    "message": "Place report updated successfully"
+                }),
+                200
+            )
+
+        except ValueError:
+            raise BadRequest(description="Invalid report_type. Must be 1 (INCORRECT), 2 (INAPPROPRIATE), or 3 (APPROPRIATE)")
+        except Exception as e:
+            raise BadRequest(description=str(e))
 
 class AllPlaceReports(Resource):
     method_decorators = {
-        "get": [],
         "post": [require_api_key]
     }
 
-    def get(self, place_id):
-        """Get all reports for a specific place"""
-        reports = get_report_places_by_place(place_id)
-        res = [
-            {
-                "id": report.id,
-                "user_id": report.user_id,
-                "place_id": report.place_id,
-                "report_type": report.report_type,
-                "timestamp": report.timestamp.isoformat()
-            } for report in reports
-        ]
-        return res, 200
-
     def post(self, place_id):
-        """Create or update a report for a place"""
+        """Create a report for a place"""
 
         if request.content_type != "application/json":
             return make_response(
@@ -74,7 +95,7 @@ class AllPlaceReports(Resource):
             return make_response(
                 jsonify({
                     "id": report.id,
-                    "message": "Place report created/updated successfully"
+                    "message": "Place report created successfully"
                 }),
                 201
             )
@@ -86,12 +107,12 @@ class AllPlaceReports(Resource):
 
 class ReportPlaceByUser(Resource):
     method_decorators = {
-        "get": [],
+        "get": []
     }
 
-    def get(self, user_id):
-        """Get all place reports by a specific user"""
-        reports = get_report_places_by_user(user_id)
+    def get(self):
+        """Get all place reports by the current authenticated user"""
+        reports = get_report_places_by_user(g.current_user.id)
         res = [
             {
                 "id": report.id,
@@ -107,6 +128,7 @@ class ReportPlaceByUser(Resource):
 class ReportReviewById(Resource):
     method_decorators = {
         "get": [],
+        "put": [require_api_key]
     }
 
     def get(self, report_id):
@@ -122,25 +144,44 @@ class ReportReviewById(Resource):
             "timestamp": report.timestamp.isoformat()
         }, 200
 
+    def put(self, report_id):
+        """Update a review report"""
+        if request.content_type != "application/json":
+            return make_response(
+                jsonify({"error": "Request content type must be JSON"}),
+                415
+            )
+
+        required_fields = ["report_type"]
+        if not request.json or not all(field in request.json for field in required_fields):
+            raise BadRequest(description=f"Missing required fields: {required_fields}")
+
+        try:
+            report_type = ReportType(request.json["report_type"])
+            report = get_report_review_by_id(report_id)
+            if not report:
+                raise NotFound(description="Review report not found")
+
+            require_ownership(report.user_id)
+            changedReport = change_report_review(report_id, report_type=report_type)
+        
+            return make_response(
+                jsonify({
+                    "id": changedReport.id,
+                    "message": "Review report updated successfully"
+                }),
+                200
+            )
+
+        except ValueError:
+            raise BadRequest(description="Invalid report_type. Must be 1 (INCORRECT), 2 (INAPPROPRIATE), or 3 (APPROPRIATE)")
+        except Exception as e:
+            raise BadRequest(description=str(e))
+
 class AllReviewReports(Resource):
     method_decorators = {
-        "get": [],
         "post": [require_api_key]
     }
-
-    def get(self, review_id):
-        """Get all reports for a specific review"""
-        reports = get_report_reviews_by_review(review_id)
-        res = [
-            {
-                "id": report.id,
-                "user_id": report.user_id,
-                "review_id": report.review_id,
-                "report_type": report.report_type,
-                "timestamp": report.timestamp.isoformat()
-            } for report in reports
-        ]
-        return res, 200
 
     def post(self, place_id, review_id):
         """Create or update a report for a review"""
@@ -159,10 +200,9 @@ class AllReviewReports(Resource):
         try:
             report_type = ReportType(request.json["report_type"])
 
-            # Optional: validate that review belongs to place TODO: This adds an extra DB query, but ensures the review is valid for the place
-            #review = get_review_by_id(review_id)
-            #if not review or review.place_id != place_id:
-             #   raise BadRequest(description="Review not found for this place")
+            review = get_review_by_id(review_id)
+            if not review or review.place_id != place_id:
+                raise BadRequest(description="Review not found for this place")
 
             report = create_report_review(
                 user_id=g.current_user.id,
@@ -185,7 +225,7 @@ class AllReviewReports(Resource):
 
 class ReportReviewByUser(Resource):
     method_decorators = {
-        "get": [],
+        "get": []
     }
 
     def get(self, user_id):
@@ -206,6 +246,7 @@ class ReportReviewByUser(Resource):
 class ReportImageById(Resource):
     method_decorators = {
         "get": [],
+        "put": [require_api_key]
     }
 
     def get(self, report_id):
@@ -221,28 +262,47 @@ class ReportImageById(Resource):
             "timestamp": report.timestamp.isoformat()
         }, 200
 
+    def put(self, report_id):
+        """Update an image report"""
+        if request.content_type != "application/json":
+            return make_response(
+                jsonify({"error": "Request content type must be JSON"}),
+                415
+            )
+
+        required_fields = ["report_type"]
+        if not request.json or not all(field in request.json for field in required_fields):
+            raise BadRequest(description=f"Missing required fields: {required_fields}")
+
+        try:
+            report_type = ReportType(request.json["report_type"])
+            report = get_report_image_by_id(report_id)
+            if not report:
+                raise NotFound(description="Image report not found")
+
+            require_ownership(report.user_id)
+            changedReport = change_report_image(report_id, report_type=report_type)
+        
+            return make_response(
+                jsonify({
+                    "id": changedReport.id,
+                    "message": "Image report updated successfully"
+                }),
+                200
+            )
+
+        except ValueError:
+            raise BadRequest(description="Invalid report_type. Must be 1 (INCORRECT), 2 (INAPPROPRIATE), or 3 (APPROPRIATE)")
+        except Exception as e:
+            raise BadRequest(description=str(e))
+
 class AllImageReports(Resource):
     method_decorators = {
-        "get": [],
         "post": [require_api_key]
     }
 
-    def get(self, image_id):
-        """Get all reports for a specific image"""
-        reports = get_report_images_by_image(image_id)
-        res = [
-            {
-                "id": report.id,
-                "user_id": report.user_id,
-                "image_id": report.image_id,
-                "report_type": report.report_type,
-                "timestamp": report.timestamp.isoformat()
-            } for report in reports
-        ]
-        return res, 200
-
     def post(self, place_id, image_id):
-        """Create or update a report for an image"""
+        """Create a report for an image"""
 
         if request.content_type != "application/json":
             return make_response(
@@ -258,8 +318,7 @@ class AllImageReports(Resource):
         try:
             report_type = ReportType(request.json["report_type"])
 
-            # Optional: validate that image belongs to place
-            from ..utils import get_image_by_id
+            # validate that image belongs to place
             image = get_image_by_id(image_id)
             
             if not image or image.place_id != place_id:
@@ -274,7 +333,7 @@ class AllImageReports(Resource):
             return make_response(
                 jsonify({
                     "id": report.id,
-                    "message": "Image report created/updated successfully"
+                    "message": "Image report created successfully"
                 }),
                 201
             )
@@ -286,7 +345,7 @@ class AllImageReports(Resource):
 
 class ReportImageByUser(Resource):
     method_decorators = {
-        "get": [],
+        "get": []
     }
 
     def get(self, user_id):

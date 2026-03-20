@@ -1,5 +1,5 @@
 from flask import Blueprint, send_from_directory, current_app
-from flask_restful import Resource, Api
+from flask_restful import Api
 from .resources.place import Places, PlaceItem, PlacesByUser
 from .resources.review import ReviewById, PlaceReviews, ReviewsByUser
 from .resources.report import (

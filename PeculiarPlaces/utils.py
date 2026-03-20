@@ -177,6 +177,17 @@ def create_report_place(user_id, place_id, report_type: ReportType):
     recalculate_place_trust_score(place_id)
     return report
 
+def change_report_place(report_id, report_type: ReportType):
+    report_value = report_type.value
+
+    report = ReportPlace.query.get(report_id)
+    if report:
+        report.report_type = report_value
+        report.timestamp = datetime.now(timezone.utc)
+        db.session.commit()
+        recalculate_place_trust_score(report.place_id)
+    return report
+
 # Report review
 def get_report_review_by_id(report_id):
     return ReportReview.query.get(report_id)
@@ -206,6 +217,17 @@ def create_report_review(user_id, review_id, report_type: ReportType):
     recalculate_review_trust_score(review_id)
     return report
 
+def change_report_review(report_id, report_type: ReportType):
+    report_value = report_type.value
+
+    report = ReportReview.query.get(report_id)
+    if report:
+        report.report_type = report_value
+        report.timestamp = datetime.now(timezone.utc)
+        db.session.commit()
+        recalculate_review_trust_score(report.review_id)
+    return report
+
 # Report image
 def get_report_image_by_id(report_id):
     return ReportImage.query.get(report_id)
@@ -233,6 +255,17 @@ def create_report_image(user_id, image_id, report_type: ReportType):
 
     db.session.commit()
     recalculate_image_trust_score(image_id)
+    return report
+
+def change_report_image(report_id, report_type: ReportType):
+    report_value = report_type.value
+
+    report = ReportImage.query.get(report_id)
+    if report:
+        report.report_type = report_value
+        report.timestamp = datetime.now(timezone.utc)
+        db.session.commit()
+        recalculate_image_trust_score(report.image_id)
     return report
 
 # Trust score functions

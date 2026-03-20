@@ -7,7 +7,7 @@ from werkzeug.exceptions import NotFound, BadRequest
 from werkzeug.utils import secure_filename
 from ..authentication import require_api_key, require_ownership
 from ..utils import (
-    get_images_by_place, get_images_by_user, create_image, delete_image
+    get_images_by_place, get_images_by_user, create_image, delete_image, get_image_by_id
 )
 import os
 
@@ -91,7 +91,6 @@ class ImageItem(Resource):
 
     def get(self, image):
         """Get image metadata including download URL"""
-        from ..utils import get_image_by_id
         image = get_image_by_id(image.id)
         if not image:
             raise NotFound(description="Image not found")
@@ -108,7 +107,6 @@ class ImageItem(Resource):
 
     def delete(self, image):
         """Delete an image and its file"""
-        from ..utils import get_image_by_id
         image = get_image_by_id(image.id)
         if not image:
             raise NotFound(description="Image not found")
@@ -125,7 +123,7 @@ class ImageItem(Resource):
 
 class ImagesByUser(Resource):
     method_decorators = {
-        "get": [],
+        "get": []
     }
 
     def get(self, user_id):
