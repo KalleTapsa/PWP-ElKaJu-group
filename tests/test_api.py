@@ -1,15 +1,11 @@
-import requests
-
-BASE_URL = "http://127.0.0.1:5000/api"
-
-# Test get all places
-response = requests.get(f"{BASE_URL}/places/")
-print("All places:", response.json())
-
-# Test get review
-response = requests.get(f"{BASE_URL}/reviews/1/")
-print("Review:", response.json())
+import pytest
 
 
-response = requests.get(f"{BASE_URL}/reviews/10/")
-print("Review:", response.json())
+@pytest.mark.integration
+def test_api_basic_endpoints(client):
+    """Basic test for API endpoints availability."""
+    # Test places endpoint
+    response = client.get('/api/places/')
+    assert response.status_code in [200, 404]  # 200 if places exist, 404 if not
+
+

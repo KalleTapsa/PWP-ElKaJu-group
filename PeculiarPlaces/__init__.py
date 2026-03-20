@@ -28,7 +28,7 @@ def create_app():
     api_key_manager.init_app(app)
 
     from .api_key_loader import fetch_api_key
-    api_key_manager.fetch_key(fetch_api_key)
+    api_key_manager.fetch_api_key_loader(fetch_api_key)
 
     from .utils import PlaceConverter, ImageConverter
     app.url_map.converters['place'] = PlaceConverter

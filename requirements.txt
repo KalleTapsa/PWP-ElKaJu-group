@@ -3,3 +3,7 @@ Flask-SQLAlchemy
 Flask-Caching
 datetime
 enum
+pytest
+pytest-flask
+factory-boy
+pytest-cov
