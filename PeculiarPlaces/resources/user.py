@@ -1,9 +1,12 @@
 import secrets
+
 from flask import g
 from flask_restful import Resource
-from ..models import User
+
 from .. import db
-from ..authentication import require_api_key
+from ..authentication import login_required
+from ..models import User
+
 
 class Users(Resource):
     def post(self):
@@ -12,7 +15,7 @@ class Users(Resource):
         """
         api_key = secrets.token_hex(32)
 
-        #No need to check for uniqueness since the sun will explode before we get a collision with 2^256 possible keys
+        # No need to check for uniqueness since the sun will explode before we get a collision with 2^256 possible keys
 
         user = User(api_key=api_key)
         db.session.add(user)
@@ -21,10 +24,10 @@ class Users(Resource):
         return {
             "id": user.id,
             "api_key": api_key,
-            "message": "Save the API key. It will not be shown again."
+            "message": "Save the API key. It will not be shown again.",
         }, 201
-    
-    @require_api_key
+
+    @login_required
     def delete(self, user_id):
         """
         Deletes a user and all their associated data.
@@ -36,7 +39,7 @@ class Users(Resource):
         user = User.query.get(user_id)
         if not user:
             return {"error": "User not found"}, 404
-        
+
         db.session.delete(user)
         db.session.commit()
 

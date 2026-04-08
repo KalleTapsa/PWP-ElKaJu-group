@@ -1,18 +1,21 @@
-from flask import request, jsonify, make_response, g
+from flask import g, jsonify, make_response, request
 from flask_restful import Resource
-from werkzeug.exceptions import NotFound, BadRequest
+from werkzeug.exceptions import BadRequest, NotFound
+
+from ..authentication import login_required, require_ownership
 from ..utils import (
-    get_review_by_id, get_reviews_by_place, get_reviews_by_user,
-    create_review, delete_review
+    create_review,
+    delete_review,
+    get_review_by_id,
+    get_reviews_by_place,
+    get_reviews_by_user,
 )
-from ..authentication import require_api_key, require_ownership
+
 
 class ReviewById(Resource):
     """Resource for handling individual reviews by their ID"""
-    method_decorators = {
-        "get": [],
-        "delete": [require_api_key]
-    }
+
+    method_decorators = {"get": [], "delete": [login_required]}
 
     def get(self, place_id, review_id):
         """Get a specific review by its ID"""
@@ -26,7 +29,7 @@ class ReviewById(Resource):
             "rating": review.rating,
             "text": review.text,
             "timestamp": review.timestamp.isoformat(),
-            "trust_score": float(review.trust_score)
+            "trust_score": float(review.trust_score),
         }, 200
 
     def delete(self, place_id, review_id):
@@ -40,12 +43,11 @@ class ReviewById(Resource):
         delete_review(review_id)
         return make_response(jsonify({"message": "Review deleted successfully"}), 200)
 
+
 class PlaceReviews(Resource):
     """Resource for handling reviews related to a specific place, get all reviews for a place and create new reviews"""
-    method_decorators = {
-        "get": [],
-        "post": [require_api_key]
-    }
+
+    method_decorators = {"get": [], "post": [login_required]}
 
     def get(self, place_id):
         """Get all reviews for a specific place"""
@@ -58,22 +60,25 @@ class PlaceReviews(Resource):
                 "rating": review.rating,
                 "text": review.text,
                 "timestamp": review.timestamp.isoformat(),
-                "trust_score": float(review.trust_score)
-            } for review in reviews
+                "trust_score": float(review.trust_score),
+            }
+            for review in reviews
         ]
         return res, 200
 
     def post(self, place_id):
         """Create a new review for a specific place"""
 
-        if request.content_type != 'application/json':
+        if request.content_type != "application/json":
             return make_response(
                 jsonify({"error": "Request content type must be JSON"}), 415
             )
 
         required_fields = ["rating"]
 
-        if not request.json or not all(field in request.json for field in required_fields):
+        if not request.json or not all(
+            field in request.json for field in required_fields
+        ):
             raise BadRequest(description=f"Missing required fields: {required_fields}")
 
         try:
@@ -86,21 +91,19 @@ class PlaceReviews(Resource):
                 user_id=g.current_user.id,
                 place_id=place_id,
                 rating=rating,
-                text=request.json.get("text")
+                text=request.json.get("text"),
             )
 
             return make_response(
-                jsonify({
-                    "id": review.id,
-                    "message": "Review created successfully"
-                }),
-                201
+                jsonify({"id": review.id, "message": "Review created successfully"}),
+                201,
             )
 
         except ValueError as e:
             raise BadRequest(description=str(e))
         except Exception as e:
             raise BadRequest(description=str(e))
+
 
 class ReviewsByUser(Resource):
     def get(self, user_id):
@@ -114,7 +117,8 @@ class ReviewsByUser(Resource):
                 "rating": review.rating,
                 "text": review.text,
                 "timestamp": review.timestamp.isoformat(),
-                "trust_score": float(review.trust_score)
-            } for review in reviews
+                "trust_score": float(review.trust_score),
+            }
+            for review in reviews
         ]
         return res, 200

@@ -11,7 +11,19 @@ dependencies = [
     "flask-sqlalchemy",
     "flask-caching",
     "flask-api-key",
+    "pytest",
+    "pytest-flask",
+    "factory-boy",
+    "pytest-cov",
 ]
 
 [tool.setuptools]
 packages = ["PeculiarPlaces"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--tb=short --strict-markers"
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+]

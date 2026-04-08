@@ -1,19 +1,21 @@
-from flask import request, jsonify, make_response, g
+from flask import g, jsonify, make_response, request
 from flask_restful import Resource
 from werkzeug.exceptions import BadRequest
 
-from ..utils import (
-    get_all_places, get_places_by_category, 
-    get_places_by_application, get_places_by_user, create_place, delete_place
-)
 from .. import db
-from ..authentication import require_api_key, require_ownership
+from ..authentication import login_required, require_ownership
+from ..utils import (
+    create_place,
+    delete_place,
+    get_all_places,
+    get_places_by_application,
+    get_places_by_category,
+    get_places_by_user,
+)
+
 
 class Places(Resource):
-    method_decorators = {
-        "get": [],
-        "post": [require_api_key]
-    }
+    method_decorators = {"get": [], "post": [login_required]}
 
     def get(self):
         """Get all places with optional filtering"""
@@ -23,14 +25,31 @@ class Places(Resource):
         radius = request.args.get("radius", None, type=float)
         category = request.args.get("category", None, type=str)
         application = request.args.get("application", None, type=str)
-        
+
         if category:
-            places = get_places_by_category(category, trust_score=trust_score, longitude=longitude, latitude=latitude, radius=radius)
+            places = get_places_by_category(
+                category,
+                trust_score=trust_score,
+                longitude=longitude,
+                latitude=latitude,
+                radius=radius,
+            )
         elif application:
-            places = get_places_by_application(application, trust_score=trust_score, longitude=longitude, latitude=latitude, radius=radius)
+            places = get_places_by_application(
+                application,
+                trust_score=trust_score,
+                longitude=longitude,
+                latitude=latitude,
+                radius=radius,
+            )
         else:
-            places = get_all_places(trust_score=trust_score, longitude=longitude, latitude=latitude, radius=radius)
-        
+            places = get_all_places(
+                trust_score=trust_score,
+                longitude=longitude,
+                latitude=latitude,
+                radius=radius,
+            )
+
         res = [
             {
                 "id": place.id,
@@ -38,15 +57,18 @@ class Places(Resource):
                 "latitude": float(place.latitude),
                 "longitude": float(place.longitude),
                 "category": place.category,
-                "trust_score": float(place.trust_score)
-            } for place in places
+                "trust_score": float(place.trust_score),
+            }
+            for place in places
         ]
         return res, 200
 
     def post(self):
         """Create a new place"""
-        if request.content_type != 'application/json':
-            return make_response(jsonify({"error": "Request content type must be JSON"}), 415)
+        if request.content_type != "application/json":
+            return make_response(
+                jsonify({"error": "Request content type must be JSON"}), 415
+            )
 
         required_fields = ["name", "latitude", "longitude"]
         missing = [f for f in required_fields if f not in request.json]
@@ -76,18 +98,23 @@ class Places(Resource):
                 address=request.json.get("address"),
                 postal_code=request.json.get("postal_code"),
                 city=request.json.get("city"),
-                application=request.json.get("application")
+                application=request.json.get("application"),
             )
-            location_url = f'/api/places/{place.id}/'
-            return make_response(jsonify({"id": place.id, "message": "Place created successfully"}), 201, {'Location': location_url})
+            location_url = f"/api/places/{place.id}/"
+            return make_response(
+                jsonify({"id": place.id, "message": "Place created successfully"}),
+                201,
+                {"Location": location_url},
+            )
         except Exception as e:
             raise BadRequest(description=str(e))
+
 
 class PlaceItem(Resource):
     method_decorators = {
         "get": [],
-        "put": [require_api_key],
-        "delete": [require_api_key]
+        "put": [login_required],
+        "delete": [login_required],
     }
 
     def get(self, place):
@@ -104,7 +131,7 @@ class PlaceItem(Resource):
             "latitude": float(place.latitude),
             "longitude": float(place.longitude),
             "application": place.application,
-            "trust_score": float(place.trust_score)
+            "trust_score": float(place.trust_score),
         }, 200
 
     def put(self, place):
@@ -112,8 +139,10 @@ class PlaceItem(Resource):
 
         require_ownership(place.user_id)
 
-        if request.content_type != 'application/json':
-            return make_response(jsonify({"error": "Request content type must be JSON"}), 415)
+        if request.content_type != "application/json":
+            return make_response(
+                jsonify({"error": "Request content type must be JSON"}), 415
+            )
 
         data = request.get_json(silent=True) or {}
 
@@ -130,7 +159,15 @@ class PlaceItem(Resource):
                 except (TypeError, ValueError):
                     raise BadRequest(description=f"{field} must be a valid number")
 
-        for field in ("name", "description", "category", "address", "postal_code", "city", "application"):
+        for field in (
+            "name",
+            "description",
+            "category",
+            "address",
+            "postal_code",
+            "city",
+            "application",
+        ):
             if field in data:
                 setattr(place, field, data[field])
 
@@ -147,7 +184,8 @@ class PlaceItem(Resource):
         require_ownership(place.user_id)
 
         delete_place(place.id)
-        return make_response(jsonify({"message": "Place deleted successfully"}), 200)
+        return make_response("", 204)
+
 
 class PlacesByUser(Resource):
     def get(self, user_id):
@@ -160,7 +198,8 @@ class PlacesByUser(Resource):
                 "latitude": float(place.latitude),
                 "longitude": float(place.longitude),
                 "category": place.category,
-                "trust_score": float(place.trust_score)
-            } for place in places
+                "trust_score": float(place.trust_score),
+            }
+            for place in places
         ]
         return res, 200

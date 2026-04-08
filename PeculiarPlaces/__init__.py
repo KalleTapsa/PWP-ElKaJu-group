@@ -1,22 +1,24 @@
 import os
+
 from flask import Flask
 from flask_caching import Cache
 from flask_sqlalchemy import SQLAlchemy
-from flask_api_key import APIKeyManager
 
 db = SQLAlchemy()
 cache = Cache()
-api_key_manager = APIKeyManager()
+
 
 def create_app():
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///" + os.path.join(app.instance_path, "development.db")
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['CACHE_TYPE'] = 'FileSystemCache'
-    app.config['CACHE_DIR'] = os.path.join(app.instance_path, 'cache')
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(
+        app.instance_path, "development.db"
+    )
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["CACHE_TYPE"] = "FileSystemCache"
+    app.config["CACHE_DIR"] = os.path.join(app.instance_path, "cache")
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "development_secret_key")
-    app.config['UPLOAD_FOLDER'] = os.path.join(app.instance_path, 'uploads')
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    app.config["UPLOAD_FOLDER"] = os.path.join(app.instance_path, "uploads")
+    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
     try:
         os.makedirs(app.instance_path)
@@ -25,17 +27,14 @@ def create_app():
 
     db.init_app(app)
     cache.init_app(app)
-    api_key_manager.init_app(app)
+    from .utils import ImageConverter, PlaceConverter
 
-    from .api_key_loader import fetch_api_key
-    api_key_manager.fetch_api_key_loader(fetch_api_key)
-
-    from .utils import PlaceConverter, ImageConverter
-    app.url_map.converters['place'] = PlaceConverter
+    app.url_map.converters["place"] = PlaceConverter
     app.url_map.converters["image"] = ImageConverter
-    
-    from .api import api_bp
+
     from . import models
+    from .api import api_bp
+
     app.cli.add_command(models.init_db_command)
     app.register_blueprint(api_bp)
 

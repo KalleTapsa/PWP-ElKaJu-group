@@ -1,23 +1,33 @@
+import factory
 import pytest
+from factory.alchemy import SQLAlchemyModelFactory
 from flask import Flask
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-import factory
-from factory.alchemy import SQLAlchemyModelFactory
 
 from PeculiarPlaces import create_app, db
-from PeculiarPlaces.models import User, Place, Review, Image, ReportPlace, ReportReview, ReportImage
+from PeculiarPlaces.models import (
+    Image,
+    Place,
+    ReportImage,
+    ReportPlace,
+    ReportReview,
+    Review,
+    User,
+)
 
 
 @pytest.fixture(scope="session")
 def app():
     """Create and configure a test app instance."""
     app = create_app()
-    app.config.update({
-        "TESTING": True,
-        "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
-        "SQLALCHEMY_TRACK_MODIFICATIONS": False,
-    })
+    app.config.update(
+        {
+            "TESTING": True,
+            "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
+            "SQLALCHEMY_TRACK_MODIFICATIONS": False,
+        }
+    )
     return app
 
 
@@ -35,14 +45,14 @@ def _db(app):
 def session(_db):
     """Create a new database session for a test."""
     connection = _db.engine.connect()
-    transaction = connection.begin()
+    # transaction = connection.begin()
 
     options = dict(bind=connection, binds={})
     db_session = _db.create_session(**options)
 
     yield db_session
 
-    transaction.rollback()
+    # transaction.rollback()
     connection.close()
     db_session.close()
 
@@ -100,7 +110,7 @@ class ImageFactory(SQLAlchemyModelFactory):
 @pytest.fixture(scope="function", autouse=True)
 def set_session_factories(session):
     """Set the session for factories.
-    
+
     Note: 'session' here is the SQLAlchemy session object yielded from the 'session' fixture.
     """
     # Ensure we are setting the session on the factory's meta

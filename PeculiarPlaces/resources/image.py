@@ -1,23 +1,28 @@
-import uuid
-from flask import request, current_app, g
-from flask_restful import Resource
-from werkzeug.exceptions import NotFound, BadRequest
-from ..authentication import require_api_key, require_ownership
-from ..utils import (
-    get_images_by_place, get_images_by_user, create_image, delete_image, get_image_by_id
-)
 import os
+import uuid
+
+from flask import current_app, g, request
+from flask_restful import Resource
+from werkzeug.exceptions import BadRequest, NotFound
+
+from ..authentication import login_required, require_ownership
+from ..utils import (
+    create_image,
+    delete_image,
+    get_image_by_id,
+    get_images_by_place,
+    get_images_by_user,
+)
 
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png"}
+
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
 class ImageCollection(Resource):
-    method_decorators = {
-        "get": [],
-        "post": [require_api_key]
-    }
+    method_decorators = {"get": [], "post": [login_required]}
 
     def get(self, place_id):
         """Get all images for a specific place"""
@@ -30,26 +35,31 @@ class ImageCollection(Resource):
                 "description": image.description,
                 "timestamp": image.timestamp.isoformat(),
                 "trust_score": float(image.trust_score),
-                "image_url": f"/api/uploads/{image.image_path}"
-            } for image in images
+                "image_url": f"/api/uploads/{image.image_path}",
+            }
+            for image in images
         ]
         return res, 200
 
     def post(self, place_id):
         """Upload and create a new image"""
-        if 'file' not in request.files:
+        if "file" not in request.files:
             return {"error": "No file provided"}, 400
 
-        file = request.files['file']
+        file = request.files["file"]
 
-        if file.filename == '':
+        if file.filename is None or file.filename == "":
             return {"error": "Empty filename"}, 400
 
         if not allowed_file(file.filename):
-            return {"error": "File type not allowed. Only jpg, jpeg, and png allowed"}, 400
+            return {
+                "error": "File type not allowed. Only jpg, jpeg, and png allowed"
+            }, 400
 
         if not g.current_user or not place_id:
-            raise BadRequest(description="Missing required fields: 'user_id' and 'place_id'")
+            raise BadRequest(
+                description="Missing required fields: 'user_id' and 'place_id'"
+            )
 
         user_id = g.current_user.id
 
@@ -65,30 +75,25 @@ class ImageCollection(Resource):
                 user_id=user_id,
                 place_id=place_id,
                 image_path=unique_filename,
-                description=request.form.get("description")
+                description=request.form.get("description"),
             )
 
-            return {
-                "id": image.id,
-                "message": "Image uploaded successfully"
-            }, 201
+            return {"id": image.id, "message": "Image uploaded successfully"}, 201
         except Exception as e:
             if os.path.isfile(filepath):
                 os.remove(filepath)
             raise BadRequest(description=str(e))
 
+
 class ImageItem(Resource):
-    method_decorators = {
-        "get": [],
-        "delete": [require_api_key]
-    }
+    method_decorators = {"get": [], "delete": [login_required]}
 
     def get(self, place_id, image_id):
         """Get image metadata including download URL"""
         image = get_image_by_id(image_id)
         if not image:
             raise NotFound(description="Image not found")
-        
+
         if image.place_id != place_id:
             raise NotFound(description="Image not found")
 
@@ -99,7 +104,7 @@ class ImageItem(Resource):
             "description": image.description,
             "timestamp": image.timestamp.isoformat(),
             "trust_score": float(image.trust_score),
-            "image_url": f"/api/uploads/{image.image_path}"
+            "image_url": f"/api/uploads/{image.image_path}",
         }, 200
 
     def delete(self, place_id, image_id):
@@ -107,7 +112,7 @@ class ImageItem(Resource):
         image = get_image_by_id(image_id)
         if not image:
             raise NotFound(description="Image not found")
-        
+
         if image.place_id != place_id:
             raise NotFound(description="Image not found")
 
@@ -121,10 +126,9 @@ class ImageItem(Resource):
         delete_image(image.id)
         return {"message": "Image deleted successfully"}, 200
 
+
 class ImagesByUser(Resource):
-    method_decorators = {
-        "get": []
-    }
+    method_decorators = {"get": []}
 
     def get(self, user_id):
         """Get all images by a specific user"""
@@ -137,7 +141,8 @@ class ImagesByUser(Resource):
                 "description": image.description,
                 "timestamp": image.timestamp.isoformat(),
                 "trust_score": float(image.trust_score),
-                "image_url": f"/api/uploads/{image.image_path}"
-            } for image in images
+                "image_url": f"/api/uploads/{image.image_path}",
+            }
+            for image in images
         ]
         return res, 200
