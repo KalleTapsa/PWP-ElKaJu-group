@@ -13,10 +13,10 @@ class ReviewById(Resource):
         "delete": [require_api_key]
     }
 
-    def get(self, review_id):
+    def get(self, place_id, review_id):
         """Get a specific review by its ID"""
         review = get_review_by_id(review_id)
-        if not review:
+        if not review or review.place_id != place_id:
             raise NotFound(description="Review not found")
         return {
             "id": review.id,
@@ -28,12 +28,12 @@ class ReviewById(Resource):
             "trust_score": float(review.trust_score)
         }, 200
 
-    def delete(self, review_id):
+    def delete(self, place_id, review_id):
         """Delete a review"""
         review = get_review_by_id(review_id)
-        if not review:
+        if not review or review.place_id != place_id:
             raise NotFound(description="Review not found")
-        
+
         require_ownership(review.user_id)
 
         delete_review(review_id)

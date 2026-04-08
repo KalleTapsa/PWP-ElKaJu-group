@@ -49,8 +49,21 @@ class Places(Resource):
             return make_response(jsonify({"error": "Request content type must be JSON"}), 415)
 
         required_fields = ["name", "latitude", "longitude"]
-        if not all(field in request.json for field in required_fields):
-            raise BadRequest(description=f"Missing required fields: {required_fields}")
+        missing = [f for f in required_fields if f not in request.json]
+        if missing:
+            raise BadRequest(description=f"Missing required fields: {missing}")
+
+        if request.json["name"] is None or str(request.json["name"]).strip() == "":
+            raise BadRequest(description="name cannot be null or empty")
+
+        for field in ["latitude", "longitude"]:
+            value = request.json[field]
+            if value is None or (isinstance(value, str) and value.strip() == ""):
+                raise BadRequest(description=f"{field} cannot be null or empty")
+            try:
+                float(value)
+            except (TypeError, ValueError):
+                raise BadRequest(description=f"{field} must be a valid number")
 
         try:
             place = create_place(
@@ -102,23 +115,31 @@ class PlaceItem(Resource):
         if request.content_type != 'application/json':
             return make_response(jsonify({"error": "Request content type must be JSON"}), 415)
 
+        data = request.get_json(silent=True) or {}
+
+        if "name" in data and not str(data["name"] or "").strip():
+            raise BadRequest(description="name cannot be null or empty")
+
+        for field in ("latitude", "longitude"):
+            if field in data:
+                value = data[field]
+                if value is None or (isinstance(value, str) and not value.strip()):
+                    raise BadRequest(description=f"{field} cannot be null or empty")
+                try:
+                    setattr(place, field, float(value))
+                except (TypeError, ValueError):
+                    raise BadRequest(description=f"{field} must be a valid number")
+
+        for field in ("name", "description", "category", "address", "postal_code", "city", "application"):
+            if field in data:
+                setattr(place, field, data[field])
+
         try:
-            place.name = request.json.get("name", place.name)
-            place.description = request.json.get("description", place.description)
-            place.category = request.json.get("category", place.category)
-            place.address = request.json.get("address", place.address)
-            place.postal_code = request.json.get("postal_code", place.postal_code)
-            place.city = request.json.get("city", place.city)
-            if "latitude" in request.json:
-                place.latitude = float(request.json["latitude"])
-            if "longitude" in request.json:
-                place.longitude = float(request.json["longitude"])
-            place.application = request.json.get("application", place.application)
-            
             db.session.commit()
-            return {"message": "Place updated successfully"}, 200
         except Exception as e:
             raise BadRequest(description=str(e))
+
+        return {"message": "Place updated successfully"}, 200
 
     def delete(self, place):
         """Delete a place"""

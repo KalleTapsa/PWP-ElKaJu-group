@@ -3,8 +3,11 @@ from flask_restful import Resource
 from werkzeug.exceptions import NotFound, BadRequest
 from ..utils import (
     ReportType,
-    get_report_place_by_id, get_report_places_by_user,
-    get_report_review_by_id, get_report_reviews_by_user,
+    get_report_images_by_image,
+    get_report_place_by_id,
+    get_report_places_by_place, get_report_places_by_user,
+    get_report_review_by_id,
+    get_report_reviews_by_review, get_report_reviews_by_user,
     get_report_image_by_id, get_report_images_by_user,
     create_report_place, create_report_review, create_report_image, get_review_by_id, get_image_by_id,
     change_report_place, change_report_review, change_report_image
@@ -18,10 +21,10 @@ class ReportPlaceById(Resource):
         "put": [require_api_key]
     }
 
-    def get(self, report_id):
+    def get(self, place_id, report_id):
         """Get a specific place report by its ID"""
         report = get_report_place_by_id(report_id)
-        if not report:
+        if not report or report.place_id != place_id:
             raise NotFound(description="Place report not found")
         return {
             "id": report.id,
@@ -31,7 +34,7 @@ class ReportPlaceById(Resource):
             "timestamp": report.timestamp.isoformat()
         }, 200
     
-    def put(self, report_id):
+    def put(self, place_id, report_id):
         """Update a place report"""
         if request.content_type != "application/json":
             return make_response(
@@ -46,7 +49,7 @@ class ReportPlaceById(Resource):
         try:
             report_type = ReportType(request.json["report_type"])
             report = get_report_place_by_id(report_id)
-            if not report:
+            if not report or report.place_id != place_id:
                 raise NotFound(description="Place report not found")
 
             require_ownership(report.user_id)
@@ -67,8 +70,25 @@ class ReportPlaceById(Resource):
 
 class AllPlaceReports(Resource):
     method_decorators = {
+        "get": [],
         "post": [require_api_key]
     }
+
+    def get(self, place_id):
+        """Get all reports for a specific place"""
+        reports = get_report_places_by_place(place_id)
+        if not reports:
+            raise NotFound(description="Place reports not found for this place")
+        res = [
+            {
+                "id": report.id,
+                "user_id": report.user_id,
+                "place_id": report.place_id,
+                "report_type": report.report_type,
+                "timestamp": report.timestamp.isoformat(),
+            } for report in reports
+        ]
+        return res, 200
 
     def post(self, place_id):
         """Create a report for a place"""
@@ -135,10 +155,10 @@ class ReportReviewById(Resource):
         "put": [require_api_key]
     }
 
-    def get(self, report_id):
+    def get(self, place_id, report_id):
         """Get a specific review report by its ID"""
         report = get_report_review_by_id(report_id)
-        if not report:
+        if not report or report.place_id != place_id:
             raise NotFound(description="Review report not found")
         return {
             "id": report.id,
@@ -148,7 +168,7 @@ class ReportReviewById(Resource):
             "timestamp": report.timestamp.isoformat()
         }, 200
 
-    def put(self, report_id):
+    def put(self, place_id, report_id):
         """Update a review report"""
         if request.content_type != "application/json":
             return make_response(
@@ -163,7 +183,7 @@ class ReportReviewById(Resource):
         try:
             report_type = ReportType(request.json["report_type"])
             report = get_report_review_by_id(report_id)
-            if not report:
+            if not report or report.place_id != place_id:
                 raise NotFound(description="Review report not found")
 
             require_ownership(report.user_id)
@@ -184,8 +204,24 @@ class ReportReviewById(Resource):
 
 class AllReviewReports(Resource):
     method_decorators = {
+        "get": [],
         "post": [require_api_key]
     }
+    def get(self, place_id, review_id):
+        """Get all reports for a specific review"""
+        reports = get_report_reviews_by_review(review_id)
+        if not reports:
+            raise NotFound(description="Review reports not found for this review")
+        res = [
+            {
+                "id": report.id,
+                "user_id": report.user_id,
+                "review_id": report.review_id,
+                "report_type": report.report_type,
+                "timestamp": report.timestamp.isoformat(),
+            } for report in reports
+        ]
+        return res, 200
 
     def post(self, place_id, review_id):
         """Create or update a report for a review"""
@@ -257,10 +293,10 @@ class ReportImageById(Resource):
         "put": [require_api_key]
     }
 
-    def get(self, report_id):
+    def get(self, place_id, report_id):
         """Get a specific image report by its ID"""
         report = get_report_image_by_id(report_id)
-        if not report:
+        if not report or report.place_id != place_id:
             raise NotFound(description="Image report not found")
         return {
             "id": report.id,
@@ -270,7 +306,7 @@ class ReportImageById(Resource):
             "timestamp": report.timestamp.isoformat()
         }, 200
 
-    def put(self, report_id):
+    def put(self, place_id, report_id):
         """Update an image report"""
         if request.content_type != "application/json":
             return make_response(
@@ -285,7 +321,7 @@ class ReportImageById(Resource):
         try:
             report_type = ReportType(request.json["report_type"])
             report = get_report_image_by_id(report_id)
-            if not report:
+            if not report or report.place_id != place_id:
                 raise NotFound(description="Image report not found")
 
             require_ownership(report.user_id)
@@ -305,9 +341,27 @@ class ReportImageById(Resource):
             raise BadRequest(description=str(e))
 
 class AllImageReports(Resource):
+    """Resource for creating reports for images."""
     method_decorators = {
+        "get": [],
         "post": [require_api_key]
     }
+
+    def get(self, place_id, image_id):
+        """Get all reports for a specific image"""
+        reports = get_report_images_by_image(image_id)
+        if not reports:
+            raise NotFound(description="Image reports not found for this place")
+        res = [
+            {
+                "id": report.id,
+                "user_id": report.user_id,
+                "image_id": report.image_id,
+                "report_type": report.report_type,
+                "timestamp": report.timestamp.isoformat(),
+            } for report in reports
+        ]
+        return res, 200
 
     def post(self, place_id, image_id):
         """Create a report for an image"""
@@ -352,6 +406,7 @@ class AllImageReports(Resource):
             raise BadRequest(description=str(e))
 
 class ReportImageByUser(Resource):
+    """Resource for fetching all image reports made by a specific user."""
     method_decorators = {
         "get": [require_api_key]
     }
