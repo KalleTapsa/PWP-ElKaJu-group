@@ -8,6 +8,7 @@ from ..utils import (
 from ..authentication import require_api_key, require_ownership
 
 class ReviewById(Resource):
+    """Resource for handling individual reviews by their ID"""
     method_decorators = {
         "get": [],
         "delete": [require_api_key]
@@ -40,6 +41,7 @@ class ReviewById(Resource):
         return make_response(jsonify({"message": "Review deleted successfully"}), 200)
 
 class PlaceReviews(Resource):
+    """Resource for handling reviews related to a specific place, get all reviews for a place and create new reviews"""
     method_decorators = {
         "get": [],
         "post": [require_api_key]

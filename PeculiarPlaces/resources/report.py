@@ -69,6 +69,7 @@ class ReportPlaceById(Resource):
             raise BadRequest(description=str(e))
 
 class AllPlaceReports(Resource):
+    """Resource for creating reports for places. Also allows fetching all reports for a specific place."""
     method_decorators = {
         "get": [],
         "post": [require_api_key]
@@ -126,6 +127,7 @@ class AllPlaceReports(Resource):
             raise BadRequest(description=str(e))
 
 class ReportPlaceByUser(Resource):
+    """Resource for fetching all place reports made by a specific user."""
     method_decorators = {
         "get": [require_api_key]
     }
