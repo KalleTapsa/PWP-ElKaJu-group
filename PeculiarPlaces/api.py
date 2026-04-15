@@ -35,7 +35,7 @@ api.add_resource(ReviewsByUser, "/users/<int:user_id>/reviews/")
 
 # Image endpoints
 api.add_resource(ImageCollection, "/places/<int:place_id>/images/")
-api.add_resource(ImageItem, "/places/<int:place_id>/images/<int:image_id>/")
+api.add_resource(ImageItem, "/places/<int:place_id>/images/<image:image>/")
 api.add_resource(ImagesByUser, "/users/<int:user_id>/images/")
 
 # Report Place endpoints
@@ -55,11 +55,11 @@ api.add_resource(ReportReviewByUser, "/users/<int:user_id>/reports/reviews/")
 
 # Report Image endpoints
 api.add_resource(
-    AllImageReports, "/places/<int:place_id>/images/<int:image_id>/reports/"
+    AllImageReports, "/places/<int:place_id>/images/<image:image>/reports/"
 )
 api.add_resource(
     ReportImageById,
-    "/places/<int:place_id>/images/<int:image_id>/reports/<int:report_id>/",
+    "/places/<int:place_id>/images/<image:image>/reports/<int:report_id>/",
 )
 api.add_resource(ReportImageByUser, "/users/<int:user_id>/reports/images/")
 

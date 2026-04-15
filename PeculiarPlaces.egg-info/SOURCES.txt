@@ -3,7 +3,6 @@ README.md
 pyproject.toml
 PeculiarPlaces/__init__.py
 PeculiarPlaces/api.py
-PeculiarPlaces/api_key_loader.py
 PeculiarPlaces/authentication.py
 PeculiarPlaces/models.py
 PeculiarPlaces/utils.py
@@ -13,3 +12,9 @@ PeculiarPlaces.egg-info/dependency_links.txt
 PeculiarPlaces.egg-info/requires.txt
 PeculiarPlaces.egg-info/top_level.txt
 tests/test_api.py
+tests/test_auth.py
+tests/test_image.py
+tests/test_models.py
+tests/test_place.py
+tests/test_review.py
+tests/test_user.py

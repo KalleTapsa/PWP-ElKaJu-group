@@ -9,7 +9,6 @@ from ..authentication import login_required, require_ownership
 from ..utils import (
     create_image,
     delete_image,
-    get_image_by_id,
     get_images_by_place,
     get_images_by_user,
 )
@@ -88,12 +87,8 @@ class ImageCollection(Resource):
 class ImageItem(Resource):
     method_decorators = {"get": [], "delete": [login_required]}
 
-    def get(self, place_id, image_id):
+    def get(self, place_id, image):
         """Get image metadata including download URL"""
-        image = get_image_by_id(image_id)
-        if not image:
-            raise NotFound(description="Image not found")
-
         if image.place_id != place_id:
             raise NotFound(description="Image not found")
 
@@ -107,12 +102,8 @@ class ImageItem(Resource):
             "image_url": f"/api/uploads/{image.image_path}",
         }, 200
 
-    def delete(self, place_id, image_id):
+    def delete(self, place_id, image):
         """Delete an image and its file"""
-        image = get_image_by_id(image_id)
-        if not image:
-            raise NotFound(description="Image not found")
-
         if image.place_id != place_id:
             raise NotFound(description="Image not found")
 

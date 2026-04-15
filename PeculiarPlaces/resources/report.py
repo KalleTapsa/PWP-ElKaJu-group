@@ -11,7 +11,6 @@ from ..utils import (
     create_report_image,
     create_report_place,
     create_report_review,
-    get_image_by_id,
     get_report_image_by_id,
     get_report_images_by_image,
     get_report_images_by_user,
@@ -313,11 +312,15 @@ class ReportReviewByUser(Resource):
 class ReportImageById(Resource):
     method_decorators = {"get": [], "put": [login_required]}
 
-    def get(self, place_id, report_id):
+    def get(self, place_id, image, report_id):
         """Get a specific image report by its ID"""
-        report = get_report_image_by_id(report_id)
-        if not report or report.place_id != place_id:
+        if image.place_id != place_id:
             raise NotFound(description="Image report not found")
+
+        report = get_report_image_by_id(report_id)
+        if not report or report.image_id != image.id:
+            raise NotFound(description="Image report not found")
+
         return {
             "id": report.id,
             "user_id": report.user_id,
@@ -326,8 +329,11 @@ class ReportImageById(Resource):
             "timestamp": report.timestamp.isoformat(),
         }, 200
 
-    def put(self, place_id, report_id):
+    def put(self, place_id, image, report_id):
         """Update an image report"""
+        if image.place_id != place_id:
+            raise NotFound(description="Image report not found")
+
         if request.content_type != "application/json":
             return make_response(
                 jsonify({"error": "Request content type must be JSON"}), 415
@@ -342,7 +348,7 @@ class ReportImageById(Resource):
         try:
             report_type = ReportType(request.json["report_type"])
             report = get_report_image_by_id(report_id)
-            if not report or report.place_id != place_id:
+            if not report or report.image_id != image.id:
                 raise NotFound(description="Image report not found")
 
             require_ownership(report.user_id)
@@ -371,9 +377,12 @@ class AllImageReports(Resource):
 
     method_decorators = {"get": [], "post": [login_required]}
 
-    def get(self, place_id, image_id):
+    def get(self, place_id, image):
         """Get all reports for a specific image"""
-        reports = get_report_images_by_image(image_id)
+        if image.place_id != place_id:
+            raise BadRequest(description="Image not found for this place")
+
+        reports = get_report_images_by_image(image.id)
         if not reports:
             raise NotFound(description="Image reports not found for this place")
         res = [
@@ -388,7 +397,7 @@ class AllImageReports(Resource):
         ]
         return res, 200
 
-    def post(self, place_id, image_id):
+    def post(self, place_id, image):
         """Create a report for an image"""
 
         if request.content_type != "application/json":
@@ -406,14 +415,11 @@ class AllImageReports(Resource):
         try:
             report_type = ReportType(request.json["report_type"])
 
-            # validate that image belongs to place
-            image = get_image_by_id(image_id)
-
-            if not image or image.place_id != place_id:
+            if image.place_id != place_id:
                 raise BadRequest(description="Image not found for this place")
 
             report = create_report_image(
-                user_id=g.current_user.id, image_id=image_id, report_type=report_type
+                user_id=g.current_user.id, image_id=image.id, report_type=report_type
             )
 
             return make_response(

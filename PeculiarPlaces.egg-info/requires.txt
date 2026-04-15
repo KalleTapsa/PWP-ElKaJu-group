@@ -3,3 +3,7 @@ flask-restful
 flask-sqlalchemy
 flask-caching
 flask-api-key
+pytest
+pytest-flask
+factory-boy
+pytest-cov
