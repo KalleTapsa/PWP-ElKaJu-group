@@ -9,6 +9,8 @@ from .models import Image, Place, ReportImage, ReportPlace, ReportReview, Review
 
 
 class ReportType(Enum):
+    """Enum for different types of reports."""
+
     INCORRECT = 1
     INAPPROPRIATE = 2
     APPROPRIATE = 3
@@ -22,33 +24,43 @@ REPORT_WEIGHTS = {
 
 
 class ImageConverter(BaseConverter):
+    """Flask URL converter for Image objects."""
+
     def to_python(self, value):
+        """Convert URL value to an Image object."""
         db_image = Image.query.filter_by(id=value).first()
         if db_image is None:
             raise NotFound
         return db_image
 
     def to_url(self, value):
+        """Convert Image object to a URL value."""
         return str(value.id)
 
 
 class PlaceConverter(BaseConverter):
+    """Flask URL converter for Place objects."""
+
     def to_python(self, value):
+        """Convert URL value to a Place object."""
         db_place = Place.query.filter_by(id=value).first()
         if db_place is None:
             raise NotFound
         return db_place
 
     def to_url(self, value):
+        """Convert Place object to a URL value."""
         return str(value.id)
 
 
 # User
 def get_user_by_id(user_id):
+    """Get a user by their ID."""
     return User.query.get(user_id)
 
 
 def create_user():
+    """Create a new user."""
     user = User()
     db.session.add(user)
     db.session.commit()
@@ -57,6 +69,7 @@ def create_user():
 
 # Place
 def get_place_by_id(place_id):
+    """Get a place by its ID."""
     return Place.query.get(place_id)
 
 
@@ -74,6 +87,7 @@ def get_all_places(trust_score=0.0, longitude=None, latitude=None, radius=None):
 
 
 def get_places_by_user(user_id):
+    """Get all places created by a specific user."""
     return Place.query.filter_by(user_id=user_id).all()
 
 
@@ -143,6 +157,7 @@ def create_place(
 
 
 def delete_place(place_id):
+    """Delete a place by its ID."""
     place = Place.query.get(place_id)
     if place:
         db.session.delete(place)
@@ -151,16 +166,19 @@ def delete_place(place_id):
 
 # Review
 def get_review_by_id(review_id):
+    """Get a review by its ID."""
     return Review.query.get(review_id)
 
 
 def get_reviews_by_place(place_id, trust_score=0):
+    """Get all reviews for a specific place."""
     return Review.query.filter(
         Review.place_id == place_id, Review.trust_score >= trust_score
     ).all()
 
 
 def get_reviews_by_user(user_id):
+    """Get all reviews created by a specific user."""
     return Review.query.filter_by(user_id=user_id).all()
 
 
@@ -175,6 +193,7 @@ def create_review(user_id, place_id, rating, text=None):
 
 
 def delete_review(review_id):
+    """Delete a review by its ID."""
     review = Review.query.get(review_id)
     if review:
         db.session.delete(review)
@@ -183,6 +202,7 @@ def delete_review(review_id):
 
 # Image
 def get_image_by_id(image_id):
+    """Get an image by its ID."""
     return Image.query.get(image_id)
 
 
@@ -194,6 +214,7 @@ def get_images_by_place(place_id, trust_score=0):
 
 
 def get_images_by_user(user_id):
+    """Get all images created by a specific user."""
     return Image.query.filter_by(user_id=user_id).all()
 
 
@@ -212,6 +233,7 @@ def create_image(user_id, place_id, image_path, description=None):
 
 
 def delete_image(image_id):
+    """Delete an image by its ID."""
     image = Image.query.get(image_id)
     if image:
         db.session.delete(image)
@@ -220,14 +242,17 @@ def delete_image(image_id):
 
 # Report place
 def get_report_place_by_id(report_id):
+    """Get a place report by its ID."""
     return ReportPlace.query.get(report_id)
 
 
 def get_report_places_by_place(place_id):
+    """Get all reports for a specific place."""
     return ReportPlace.query.filter_by(place_id=place_id).all()
 
 
 def get_report_places_by_user(user_id):
+    """Get all place reports created by a specific user."""
     return ReportPlace.query.filter_by(user_id=user_id).all()
 
 
@@ -265,14 +290,17 @@ def change_report_place(report_id, report_type: ReportType):
 
 # Report review
 def get_report_review_by_id(report_id):
+    """Get a review report by its ID."""
     return ReportReview.query.get(report_id)
 
 
 def get_report_reviews_by_review(review_id):
+    """Get all reports for a specific review."""
     return ReportReview.query.filter_by(review_id=review_id).all()
 
 
 def get_report_reviews_by_user(user_id):
+    """Get all review reports created by a specific user."""
     return ReportReview.query.filter_by(user_id=user_id).all()
 
 
@@ -310,14 +338,17 @@ def change_report_review(report_id, report_type: ReportType):
 
 # Report image
 def get_report_image_by_id(report_id):
+    """Get an image report by its ID."""
     return ReportImage.query.get(report_id)
 
 
 def get_report_images_by_image(image_id):
+    """Get all reports for a specific image."""
     return ReportImage.query.filter_by(image_id=image_id).all()
 
 
 def get_report_images_by_user(user_id):
+    """Get all image reports created by a specific user."""
     return ReportImage.query.filter_by(user_id=user_id).all()
 
 

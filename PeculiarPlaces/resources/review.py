@@ -106,6 +106,8 @@ class PlaceReviews(Resource):
 
 
 class ReviewsByUser(Resource):
+    """Resource for fetching all reviews made by a specific user."""
+
     def get(self, user_id):
         """Get all reviews by a specific user"""
         reviews = get_reviews_by_user(user_id)

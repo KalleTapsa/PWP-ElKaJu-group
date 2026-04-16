@@ -4,7 +4,7 @@ from PeculiarPlaces.models import User
 
 
 @pytest.mark.integration
-def test_create_user(session, client):
+def test_create_user(client):
     """Test POST /api/users/ creates a new user."""
     response = client.post("/api/users/")
     assert response.status_code == 201
@@ -16,7 +16,7 @@ def test_create_user(session, client):
 
 
 @pytest.mark.integration
-def test_create_user_saves_to_db(session, client):
+def test_create_user_saves_to_db(client):
     """Test POST /api/users/ saves user to database."""
     response = client.post("/api/users/")
     assert response.status_code == 201
@@ -28,7 +28,7 @@ def test_create_user_saves_to_db(session, client):
 
 
 @pytest.mark.integration
-def test_create_user_unique_api_key(session, client):
+def test_create_user_unique_api_key(client):
     """Test POST /api/users/ generates unique API key for each user."""
     response1 = client.post("/api/users/")
     data1 = response1.get_json()

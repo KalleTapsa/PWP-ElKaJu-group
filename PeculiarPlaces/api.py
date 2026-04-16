@@ -66,4 +66,5 @@ api.add_resource(ReportImageByUser, "/users/<int:user_id>/reports/images/")
 
 @api_bp.route("/uploads/<path:filename>")
 def uploaded_file(filename):
+    """Serve an uploaded file from the upload folder."""
     return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename)

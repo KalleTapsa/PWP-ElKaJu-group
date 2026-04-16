@@ -1,10 +1,12 @@
+"""Resource for handling places."""
+
 from flask import g, jsonify, make_response, request
 from flask_restful import Resource
 from werkzeug.exceptions import BadRequest
 
-from .. import db
-from ..authentication import login_required, require_ownership
-from ..utils import (
+from PeculiarPlaces import db
+from PeculiarPlaces.authentication import login_required, require_ownership
+from PeculiarPlaces.utils import (
     create_place,
     delete_place,
     get_all_places,
@@ -84,8 +86,8 @@ class Places(Resource):
                 raise BadRequest(description=f"{field} cannot be null or empty")
             try:
                 float(value)
-            except (TypeError, ValueError):
-                raise BadRequest(description=f"{field} must be a valid number")
+            except (TypeError, ValueError) as exc:
+                raise BadRequest(description=f"{field} must be a valid number") from exc
 
         try:
             place = create_place(
@@ -107,7 +109,7 @@ class Places(Resource):
                 {"Location": location_url},
             )
         except Exception as e:
-            raise BadRequest(description=str(e))
+            raise BadRequest(description=str(e)) from e
 
 
 class PlaceItem(Resource):
@@ -156,8 +158,10 @@ class PlaceItem(Resource):
                     raise BadRequest(description=f"{field} cannot be null or empty")
                 try:
                     setattr(place, field, float(value))
-                except (TypeError, ValueError):
-                    raise BadRequest(description=f"{field} must be a valid number")
+                except (TypeError, ValueError) as exc:
+                    raise BadRequest(
+                        description=f"{field} must be a valid number"
+                    ) from exc
 
         for field in (
             "name",
@@ -174,7 +178,7 @@ class PlaceItem(Resource):
         try:
             db.session.commit()
         except Exception as e:
-            raise BadRequest(description=str(e))
+            raise BadRequest(description=str(e)) from e
 
         return {"message": "Place updated successfully"}, 200
 

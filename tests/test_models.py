@@ -1,18 +1,12 @@
-import random
-import string
-
 import pytest
 from sqlalchemy.exc import IntegrityError
 
 from PeculiarPlaces.models import (
     Image,
     Place,
-    ReportImage,
     ReportPlace,
-    ReportReview,
     Review,
     User,
-    db,
 )
 
 

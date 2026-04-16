@@ -1,17 +1,17 @@
+"""
+Pytest configuration and fixtures for the PeculiarPlaces application.
+"""
+
+# pylint: disable=redefined-outer-name
 import factory
 import pytest
 from factory.alchemy import SQLAlchemyModelFactory
-from flask import Flask
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+
 
 from PeculiarPlaces import create_app, db
 from PeculiarPlaces.models import (
     Image,
     Place,
-    ReportImage,
-    ReportPlace,
-    ReportReview,
     Review,
     User,
 )
@@ -20,15 +20,15 @@ from PeculiarPlaces.models import (
 @pytest.fixture(scope="session")
 def app():
     """Create and configure a test app instance."""
-    app = create_app()
-    app.config.update(
+    app_instance = create_app()
+    app_instance.config.update(
         {
             "TESTING": True,
             "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
             "SQLALCHEMY_TRACK_MODIFICATIONS": False,
         }
     )
-    return app
+    return app_instance
 
 
 @pytest.fixture(scope="session")
@@ -47,7 +47,7 @@ def session(_db):
     connection = _db.engine.connect()
     # transaction = connection.begin()
 
-    options = dict(bind=connection, binds={})
+    options = {"bind": connection, "binds": {}}
     db_session = _db.create_session(**options)
 
     yield db_session
@@ -58,14 +58,20 @@ def session(_db):
 
 
 @pytest.fixture(scope="function")
-def client(app, session):
+def client(app):
     """A test client for the app."""
     return app.test_client()
 
 
 # Factory-boy factories
 class UserFactory(SQLAlchemyModelFactory):
+    """Factory for User model."""
+
+    # pylint: disable=too-few-public-methods
     class Meta:
+        """Meta configuration for UserFactory."""
+
+        # pylint: disable=too-few-public-methods
         model = User
         sqlalchemy_session = None  # Will be set in fixture
 
@@ -75,7 +81,13 @@ class UserFactory(SQLAlchemyModelFactory):
 
 
 class PlaceFactory(SQLAlchemyModelFactory):
+    """Factory for Place model."""
+
+    # pylint: disable=too-few-public-methods
     class Meta:
+        """Meta configuration for PlaceFactory."""
+
+        # pylint: disable=too-few-public-methods
         model = Place
         sqlalchemy_session = None
 
@@ -87,7 +99,13 @@ class PlaceFactory(SQLAlchemyModelFactory):
 
 
 class ReviewFactory(SQLAlchemyModelFactory):
+    """Factory for Review model."""
+
+    # pylint: disable=too-few-public-methods
     class Meta:
+        """Meta configuration for ReviewFactory."""
+
+        # pylint: disable=too-few-public-methods
         model = Review
         sqlalchemy_session = None
 
@@ -98,7 +116,13 @@ class ReviewFactory(SQLAlchemyModelFactory):
 
 
 class ImageFactory(SQLAlchemyModelFactory):
+    """Factory for Image model."""
+
+    # pylint: disable=too-few-public-methods
     class Meta:
+        """Meta configuration for ImageFactory."""
+
+        # pylint: disable=too-few-public-methods
         model = Image
         sqlalchemy_session = None
 
@@ -113,6 +137,7 @@ def set_session_factories(session):
 
     Note: 'session' here is the SQLAlchemy session object yielded from the 'session' fixture.
     """
+    # pylint: disable=protected-access
     # Ensure we are setting the session on the factory's meta
     UserFactory._meta.sqlalchemy_session = session
     PlaceFactory._meta.sqlalchemy_session = session

@@ -9,6 +9,8 @@ from ..models import User
 
 
 class Users(Resource):
+    """Resource for handling user registration and deletion."""
+
     def post(self):
         """
         Registers a new user and returns their API key.

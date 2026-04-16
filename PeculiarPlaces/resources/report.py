@@ -26,6 +26,8 @@ from ..utils import (
 
 # Report Place Resources
 class ReportPlaceById(Resource):
+    """Resource for handling a single place report."""
+
     method_decorators = {"get": [], "put": [login_required]}
 
     def get(self, place_id, report_id):
@@ -61,24 +63,24 @@ class ReportPlaceById(Resource):
                 raise NotFound(description="Place report not found")
 
             require_ownership(report.user_id)
-            changedReport = change_report_place(report_id, report_type=report_type)
+            changed_report = change_report_place(report_id, report_type=report_type)
 
             return make_response(
                 jsonify(
                     {
-                        "id": changedReport.id,
+                        "id": changed_report.id,
                         "message": "Place report updated successfully",
                     }
                 ),
                 200,
             )
 
-        except ValueError:
+        except ValueError as e:
             raise BadRequest(
                 description="Invalid report_type. Must be 1 (INCORRECT), 2 (INAPPROPRIATE), or 3 (APPROPRIATE)"
-            )
+            ) from e
         except Exception as e:
-            raise BadRequest(description=str(e))
+            raise BadRequest(description=str(e)) from e
 
 
 class AllPlaceReports(Resource):
@@ -133,12 +135,12 @@ class AllPlaceReports(Resource):
                 201,
             )
 
-        except ValueError:
+        except ValueError as e:
             raise BadRequest(
                 description="Invalid report_type. Must be 1 (INCORRECT), 2 (INAPPROPRIATE), or 3 (APPROPRIATE)"
-            )
+            ) from e
         except Exception as e:
-            raise BadRequest(description=str(e))
+            raise BadRequest(description=str(e)) from e
 
 
 class ReportPlaceByUser(Resource):
@@ -167,6 +169,8 @@ class ReportPlaceByUser(Resource):
 
 # Report Review Resources
 class ReportReviewById(Resource):
+    """Resource for handling a single review report."""
+
     method_decorators = {"get": [], "put": [login_required]}
 
     def get(self, place_id, report_id):
@@ -202,27 +206,29 @@ class ReportReviewById(Resource):
                 raise NotFound(description="Review report not found")
 
             require_ownership(report.user_id)
-            changedReport = change_report_review(report_id, report_type=report_type)
+            changed_report = change_report_review(report_id, report_type=report_type)
 
             return make_response(
                 jsonify(
                     {
-                        "id": changedReport.id,
+                        "id": changed_report.id,
                         "message": "Review report updated successfully",
                     }
                 ),
                 200,
             )
 
-        except ValueError:
+        except ValueError as e:
             raise BadRequest(
                 description="Invalid report_type. Must be 1 (INCORRECT), 2 (INAPPROPRIATE), or 3 (APPROPRIATE)"
-            )
+            ) from e
         except Exception as e:
-            raise BadRequest(description=str(e))
+            raise BadRequest(description=str(e)) from e
 
 
 class AllReviewReports(Resource):
+    """Resource for creating reports for reviews. Also allows fetching all reports for a specific review."""
+
     method_decorators = {"get": [], "post": [login_required]}
 
     def get(self, place_id, review_id):
@@ -278,15 +284,17 @@ class AllReviewReports(Resource):
                 201,
             )
 
-        except ValueError:
+        except ValueError as e:
             raise BadRequest(
                 description="Invalid report_type. Must be 1 (INCORRECT), 2 (INAPPROPRIATE), or 3 (APPROPRIATE)"
-            )
+            ) from e
         except Exception as e:
-            raise BadRequest(description=str(e))
+            raise BadRequest(description=str(e)) from e
 
 
 class ReportReviewByUser(Resource):
+    """Resource for fetching all review reports made by a specific user."""
+
     method_decorators = {"get": [login_required]}
 
     def get(self, user_id):
@@ -310,6 +318,8 @@ class ReportReviewByUser(Resource):
 
 # Report Image Resources
 class ReportImageById(Resource):
+    """Resource for handling a single image report."""
+
     method_decorators = {"get": [], "put": [login_required]}
 
     def get(self, place_id, image, report_id):
@@ -352,24 +362,24 @@ class ReportImageById(Resource):
                 raise NotFound(description="Image report not found")
 
             require_ownership(report.user_id)
-            changedReport = change_report_image(report_id, report_type=report_type)
 
+            changed_report = change_report_image(report_id, report_type=report_type)
             return make_response(
                 jsonify(
                     {
-                        "id": changedReport.id,
+                        "id": changed_report.id,
                         "message": "Image report updated successfully",
                     }
                 ),
                 200,
             )
 
-        except ValueError:
+        except ValueError as e:
             raise BadRequest(
                 description="Invalid report_type. Must be 1 (INCORRECT), 2 (INAPPROPRIATE), or 3 (APPROPRIATE)"
-            )
+            ) from e
         except Exception as e:
-            raise BadRequest(description=str(e))
+            raise BadRequest(description=str(e)) from e
 
 
 class AllImageReports(Resource):
@@ -429,12 +439,12 @@ class AllImageReports(Resource):
                 201,
             )
 
-        except ValueError:
+        except ValueError as e:
             raise BadRequest(
                 description="Invalid report_type. Must be 1 (INCORRECT), 2 (INAPPROPRIATE), or 3 (APPROPRIATE)"
-            )
+            ) from e
         except Exception as e:
-            raise BadRequest(description=str(e))
+            raise BadRequest(description=str(e)) from e
 
 
 class ReportImageByUser(Resource):

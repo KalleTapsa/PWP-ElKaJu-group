@@ -4,7 +4,7 @@ from PeculiarPlaces.models import Place, User
 
 
 @pytest.mark.integration
-def test_get_places_empty(session, client):
+def test_get_places_empty(client):
     """Test GET /api/places/."""
     response = client.get("/api/places/")
     assert response.status_code == 200
@@ -68,14 +68,14 @@ def test_get_place_by_id(session, client):
     session.add(place)
     session.commit()
 
-    response = client.get(f"/api/places/")
+    response = client.get("/api/places/")
     assert response.status_code == 200
     data = response.get_json()
     assert data != []
 
 
 @pytest.mark.integration
-def test_get_place_not_found(session, client):
+def test_get_place_not_found(client):
     """Test GET /api/places/<id> for non-existent place."""
     response = client.get("/api/places/999/")
     assert response.status_code == 404

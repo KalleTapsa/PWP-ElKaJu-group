@@ -14,17 +14,24 @@ from ..utils import (
 )
 
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png"}
+IMAGE_CACHE = {}
 
 
 def allowed_file(filename):
+    """Check if a filename has an allowed extension."""
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 class ImageCollection(Resource):
+    """Resource for handling a collection of images for a place."""
+
     method_decorators = {"get": [], "post": [login_required]}
 
     def get(self, place_id):
         """Get all images for a specific place"""
+        if place_id in IMAGE_CACHE:
+            return IMAGE_CACHE[place_id], 200
+
         images = get_images_by_place(place_id)
         res = [
             {
@@ -38,6 +45,9 @@ class ImageCollection(Resource):
             }
             for image in images
         ]
+
+        IMAGE_CACHE[place_id] = res
+
         return res, 200
 
     def post(self, place_id):
@@ -77,6 +87,9 @@ class ImageCollection(Resource):
                 description=request.form.get("description"),
             )
 
+            if place_id in IMAGE_CACHE:
+                del IMAGE_CACHE[place_id]
+
             return {"id": image.id, "message": "Image uploaded successfully"}, 201
         except Exception as e:
             if os.path.isfile(filepath):
@@ -85,6 +98,8 @@ class ImageCollection(Resource):
 
 
 class ImageItem(Resource):
+    """Resource for handling a single image."""
+
     method_decorators = {"get": [], "delete": [login_required]}
 
     def get(self, place_id, image):
@@ -115,10 +130,15 @@ class ImageItem(Resource):
             os.remove(file_path)
 
         delete_image(image.id)
+        if place_id in IMAGE_CACHE:
+            del IMAGE_CACHE[place_id]
+
         return {"message": "Image deleted successfully"}, 200
 
 
 class ImagesByUser(Resource):
+    """Resource for handling images created by a user."""
+
     method_decorators = {"get": []}
 
     def get(self, user_id):

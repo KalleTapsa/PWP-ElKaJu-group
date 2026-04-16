@@ -19,6 +19,8 @@ def require_ownership(user_id):
 
 
 def login_required(f):
+    """Decorator to ensure the request is authenticated using an API key."""
+
     @wraps(f)
     def decorated_function(*args, **kwargs):
         header = request.headers.get("Authorization")
