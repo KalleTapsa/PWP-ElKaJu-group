@@ -22,24 +22,33 @@ components:
       properties:
         name:
           type: string
+          example: "Mysterious Cave"
         description:
           type: string
+          example: "A hidden cave with unusual rock formations"
         category:
           type: string
+          example: "nature"
         address:
           type: string
+          example: "Forest Road 1"
         postal_code:
           type: string
+          example: "00100"
         city:
           type: string
+          example: "Helsinki"
         latitude:
           type: number
           format: float
+          example: 60.1699
         longitude:
           type: number
           format: float
+          example: 24.9384
         application:
           type: string
+          example: "MyApp"
       required:
         - name
         - latitude
@@ -50,50 +59,68 @@ components:
       properties:
         id:
           type: integer
+          example: 1
         name:
           type: string
+          example: "Mysterious Cave"
         latitude:
           type: number
           format: float
+          example: 60.1699
         longitude:
           type: number
           format: float
+          example: 24.9384
         category:
           type: string
+          example: "nature"
         trust_score:
           type: number
           format: float
+          example: 4.0
 
     PlaceDetail:
       type: object
       properties:
         id:
           type: integer
+          example: 1
         user_id:
           type: integer
+          example: 1
         name:
           type: string
+          example: "Mysterious Cave"
         description:
           type: string
+          example: "A hidden cave with unusual rock formations"
         category:
           type: string
+          example: "nature"
         address:
           type: string
+          example: "Forest Road 1"
         postal_code:
           type: string
+          example: "00100"
         city:
           type: string
+          example: "Helsinki"
         latitude:
           type: number
           format: float
+          example: 60.1699
         longitude:
           type: number
           format: float
+          example: 24.9384
         application:
           type: string
+          example: "MyApp"
         trust_score:
           type: number
           format: float
+          example: 4.0
 
     Review:
       type: object
@@ -102,8 +129,10 @@ components:
           type: integer
           minimum: 1
           maximum: 5
+          example: 5
         text:
           type: string
+          example: "Absolutely breathtaking!"
       required:
         - rating
 
@@ -112,42 +141,56 @@ components:
       properties:
         id:
           type: integer
+          example: 1
         user_id:
           type: integer
+          example: 2
         place_id:
           type: integer
+          example: 1
         rating:
           type: integer
           minimum: 1
           maximum: 5
+          example: 5
         text:
           type: string
+          example: "Absolutely breathtaking!"
         timestamp:
           type: string
           format: date-time
+          example: "2024-01-15T12:00:00Z"
         trust_score:
           type: number
           format: float
+          example: 4.0
 
     ImageDetail:
       type: object
       properties:
         id:
           type: integer
+          example: 1
         user_id:
           type: integer
+          example: 2
         place_id:
           type: integer
+          example: 1
         description:
           type: string
+          example: "Entrance to the cave"
         timestamp:
           type: string
           format: date-time
+          example: "2024-01-15T12:00:00Z"
         trust_score:
           type: number
           format: float
+          example: 4.0
         image_url:
           type: string
+          example: "/api/uploads/3f2e1a-photo.jpg"
 
     Report:
       type: object
@@ -156,6 +199,7 @@ components:
           type: integer
           enum: [1, 2, 3]
           description: "1=INCORRECT, 2=INAPPROPRIATE, 3=APPROPRIATE"
+          example: 3
       required:
         - report_type
 
@@ -164,63 +208,66 @@ components:
       properties:
         id:
           type: integer
+          example: 1
         user_id:
           type: integer
+          example: 2
         place_id:
           type: integer
+          example: 1
         report_type:
           type: integer
           enum: [1, 2, 3]
           description: "1=INCORRECT, 2=INAPPROPRIATE, 3=APPROPRIATE"
+          example: 3
         timestamp:
           type: string
           format: date-time
+          example: "2024-01-15T12:00:00Z"
 
     ReviewReportDetail:
       type: object
       properties:
         id:
           type: integer
+          example: 1
         user_id:
           type: integer
+          example: 3
         review_id:
           type: integer
+          example: 1
         report_type:
           type: integer
           enum: [1, 2, 3]
           description: "1=INCORRECT, 2=INAPPROPRIATE, 3=APPROPRIATE"
+          example: 2
         timestamp:
           type: string
           format: date-time
+          example: "2024-01-15T13:00:00Z"
 
     ImageReportDetail:
       type: object
       properties:
         id:
           type: integer
+          example: 1
         user_id:
           type: integer
+          example: 3
         image_id:
           type: integer
+          example: 1
         report_type:
           type: integer
           enum: [1, 2, 3]
           description: "1=INCORRECT, 2=INAPPROPRIATE, 3=APPROPRIATE"
+          example: 2
         timestamp:
           type: string
           format: date-time
-
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-
-    ErrorDescription:
-      type: object
-      properties:
-        description:
-          type: string
+          example: "2024-01-15T14:00:00Z"
 
 paths:
 
@@ -247,6 +294,7 @@ paths:
         required: true
         schema:
           type: integer
+          example: 1
     delete:
       summary: Delete own user account
       description: Deletes the authenticated user's account and all associated data (places, reviews, images, reports).
@@ -263,8 +311,8 @@ paths:
           description: Authentication required
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                error: "Authentication required"
         '403':
           description: Cannot delete another user's account
           content:
@@ -275,8 +323,8 @@ paths:
           description: User not found
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                error: "User not found"
 
   /users/{user_id}/places/:
     parameters:
@@ -285,6 +333,7 @@ paths:
         required: true
         schema:
           type: integer
+          example: 1
     get:
       summary: Get all places by a user
       responses:
@@ -311,6 +360,7 @@ paths:
         required: true
         schema:
           type: integer
+          example: 1
     get:
       summary: Get all reviews by a user
       responses:
@@ -328,7 +378,7 @@ paths:
                   place_id: 2
                   rating: 4
                   text: "Really cool spot!"
-                  timestamp: "2024-01-15T12:00:00"
+                  timestamp: "2024-01-15T12:00:00Z"
                   trust_score: 4.0
 
   /users/{user_id}/images/:
@@ -338,6 +388,7 @@ paths:
         required: true
         schema:
           type: integer
+          example: 1
     get:
       summary: Get all images uploaded by a user
       responses:
@@ -354,9 +405,9 @@ paths:
                   user_id: 1
                   place_id: 2
                   description: "Entrance to the cave"
-                  timestamp: "2024-01-15T12:00:00"
+                  timestamp: "2024-01-15T12:00:00Z"
                   trust_score: 4.0
-                  image_url: "/api/uploads/uuid-filename.jpg"
+                  image_url: "/api/uploads/3f2e1a-photo.jpg"
 
   /users/{user_id}/reports/places/:
     parameters:
@@ -365,6 +416,7 @@ paths:
         required: true
         schema:
           type: integer
+          example: 1
     get:
       summary: Get all place reports by a user (own reports only)
       security:
@@ -378,18 +430,24 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/PlaceReportDetail'
+              example:
+                - id: 1
+                  user_id: 1
+                  place_id: 2
+                  report_type: 3
+                  timestamp: "2024-01-15T12:00:00Z"
         '401':
           description: Authentication required
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                error: "Authentication required"
         '404':
           description: Access denied (shown as not found)
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDescription'
+              example:
+                description: "Not found"
 
   /users/{user_id}/reports/reviews/:
     parameters:
@@ -398,6 +456,7 @@ paths:
         required: true
         schema:
           type: integer
+          example: 1
     get:
       summary: Get all review reports by a user (own reports only)
       security:
@@ -411,18 +470,24 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ReviewReportDetail'
+              example:
+                - id: 1
+                  user_id: 1
+                  review_id: 3
+                  report_type: 2
+                  timestamp: "2024-01-15T13:00:00Z"
         '401':
           description: Authentication required
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                error: "Authentication required"
         '404':
           description: Access denied (shown as not found)
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDescription'
+              example:
+                description: "Not found"
 
   /users/{user_id}/reports/images/:
     parameters:
@@ -431,6 +496,7 @@ paths:
         required: true
         schema:
           type: integer
+          example: 1
     get:
       summary: Get all image reports by a user (own reports only)
       security:
@@ -444,18 +510,24 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ImageReportDetail'
+              example:
+                - id: 1
+                  user_id: 1
+                  image_id: 3
+                  report_type: 2
+                  timestamp: "2024-01-15T14:00:00Z"
         '401':
           description: Authentication required
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                error: "Authentication required"
         '404':
           description: Access denied (shown as not found)
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDescription'
+              example:
+                description: "Not found"
 
   # ── Places ─────────────────────────────────────────────────────────────────
 
@@ -471,34 +543,40 @@ paths:
             type: number
             format: float
             default: 0
+            example: 3.5
         - name: latitude
           in: query
           description: Center latitude for radius search
           schema:
             type: number
             format: float
+            example: 60.1699
         - name: longitude
           in: query
           description: Center longitude for radius search
           schema:
             type: number
             format: float
+            example: 24.9384
         - name: radius
           in: query
           description: Search radius in kilometres (used with latitude and longitude)
           schema:
             type: number
             format: float
+            example: 10.0
         - name: category
           in: query
           description: Filter by category
           schema:
             type: string
+            example: "nature"
         - name: application
           in: query
           description: Filter by application name
           schema:
             type: string
+            example: "MyApp"
       responses:
         '200':
           description: List of places
@@ -550,6 +628,7 @@ paths:
               description: URL of the newly created place
               schema:
                 type: string
+                example: "/api/places/1/"
           content:
             application/json:
               example:
@@ -559,14 +638,14 @@ paths:
           description: Missing or invalid fields
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                error: "Missing required fields: ['name']"
         '401':
           description: Authentication required
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                error: "Authentication required"
         '415':
           description: Content type must be application/json
           content:
@@ -581,6 +660,7 @@ paths:
         required: true
         schema:
           type: integer
+          example: 1
 
     get:
       summary: Get a single place
@@ -608,8 +688,8 @@ paths:
           description: Place not found
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDescription'
+              example:
+                description: "Place not found"
 
     put:
       summary: Update a place (owner only)
@@ -635,14 +715,14 @@ paths:
           description: Invalid field values
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                error: "Invalid field values"
         '401':
           description: Authentication required
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                error: "Authentication required"
         '403':
           description: Not the owner of this place
           content:
@@ -653,8 +733,8 @@ paths:
           description: Place not found
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDescription'
+              example:
+                description: "Place not found"
         '415':
           description: Content type must be application/json
           content:
@@ -674,8 +754,8 @@ paths:
           description: Authentication required
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                error: "Authentication required"
         '403':
           description: Not the owner of this place
           content:
@@ -686,8 +766,8 @@ paths:
           description: Place not found
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDescription'
+              example:
+                description: "Place not found"
 
   # ── Reviews ────────────────────────────────────────────────────────────────
 
@@ -698,6 +778,7 @@ paths:
         required: true
         schema:
           type: integer
+          example: 1
 
     get:
       summary: Get all reviews for a place
@@ -716,7 +797,7 @@ paths:
                   place_id: 1
                   rating: 5
                   text: "Absolutely breathtaking!"
-                  timestamp: "2024-01-15T12:00:00"
+                  timestamp: "2024-01-15T12:00:00Z"
                   trust_score: 4.0
 
     post:
@@ -744,20 +825,20 @@ paths:
           description: Missing or invalid fields
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                error: "Missing required fields: ['rating']"
         '401':
           description: Authentication required
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                error: "Authentication required"
         '404':
           description: Place not found
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDescription'
+              example:
+                description: "Place not found"
         '415':
           description: Content type must be application/json
           content:
@@ -772,11 +853,13 @@ paths:
         required: true
         schema:
           type: integer
+          example: 1
       - name: review_id
         in: path
         required: true
         schema:
           type: integer
+          example: 1
 
     get:
       summary: Get a single review
@@ -793,14 +876,14 @@ paths:
                 place_id: 1
                 rating: 5
                 text: "Absolutely breathtaking!"
-                timestamp: "2024-01-15T12:00:00"
+                timestamp: "2024-01-15T12:00:00Z"
                 trust_score: 4.0
         '404':
           description: Review not found or does not belong to this place
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDescription'
+              example:
+                description: "Review not found"
 
     delete:
       summary: Delete a review (owner only)
@@ -817,8 +900,8 @@ paths:
           description: Authentication required
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                error: "Authentication required"
         '403':
           description: Not the owner of this review
           content:
@@ -829,8 +912,8 @@ paths:
           description: Review not found or does not belong to this place
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDescription'
+              example:
+                description: "Review not found"
 
   # ── Images ─────────────────────────────────────────────────────────────────
 
@@ -841,6 +924,7 @@ paths:
         required: true
         schema:
           type: integer
+          example: 1
 
     get:
       summary: Get all images for a place
@@ -859,9 +943,9 @@ paths:
                   user_id: 2
                   place_id: 1
                   description: "Entrance to the cave"
-                  timestamp: "2024-01-15T12:00:00"
+                  timestamp: "2024-01-15T12:00:00Z"
                   trust_score: 4.0
-                  image_url: "/api/uploads/uuid-filename.jpg"
+                  image_url: "/api/uploads/3f2e1a-photo.jpg"
 
     post:
       summary: Upload an image for a place
@@ -880,7 +964,7 @@ paths:
                   description: Image file (jpg, jpeg, or png only)
                 description:
                   type: string
-                  description: Optional description of the image
+                  example: "Entrance to the cave"
               required:
                 - file
       responses:
@@ -906,14 +990,14 @@ paths:
           description: Authentication required
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                error: "Authentication required"
         '404':
           description: Place not found
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDescription'
+              example:
+                description: "Place not found"
 
   /places/{place_id}/images/{image_id}/:
     parameters:
@@ -922,11 +1006,13 @@ paths:
         required: true
         schema:
           type: integer
+          example: 1
       - name: image_id
         in: path
         required: true
         schema:
           type: integer
+          example: 1
 
     get:
       summary: Get a single image
@@ -942,15 +1028,15 @@ paths:
                 user_id: 2
                 place_id: 1
                 description: "Entrance to the cave"
-                timestamp: "2024-01-15T12:00:00"
+                timestamp: "2024-01-15T12:00:00Z"
                 trust_score: 4.0
-                image_url: "/api/uploads/uuid-filename.jpg"
+                image_url: "/api/uploads/3f2e1a-photo.jpg"
         '404':
           description: Image not found or does not belong to this place
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDescription'
+              example:
+                description: "Image not found"
 
     delete:
       summary: Delete an image (owner only)
@@ -968,8 +1054,8 @@ paths:
           description: Authentication required
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                error: "Authentication required"
         '403':
           description: Not the owner of this image
           content:
@@ -980,8 +1066,8 @@ paths:
           description: Image not found
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDescription'
+              example:
+                description: "Image not found"
 
   /uploads/{filename}:
     parameters:
@@ -990,6 +1076,7 @@ paths:
         required: true
         schema:
           type: string
+          example: "3f2e1a-photo.jpg"
     get:
       summary: Serve an uploaded image file
       responses:
@@ -1016,6 +1103,7 @@ paths:
         required: true
         schema:
           type: integer
+          example: 1
 
     get:
       summary: Get all reports for a place
@@ -1033,13 +1121,13 @@ paths:
                   user_id: 2
                   place_id: 1
                   report_type: 3
-                  timestamp: "2024-01-15T12:00:00"
+                  timestamp: "2024-01-15T12:00:00Z"
         '404':
           description: No reports found for this place
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDescription'
+              example:
+                description: "Place reports not found for this place"
 
     post:
       summary: Report a place
@@ -1069,20 +1157,20 @@ paths:
           description: Invalid report_type
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                error: "Invalid report_type"
         '401':
           description: Authentication required
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                error: "Authentication required"
         '404':
           description: Place not found
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDescription'
+              example:
+                description: "Place not found"
         '415':
           description: Content type must be application/json
           content:
@@ -1097,11 +1185,13 @@ paths:
         required: true
         schema:
           type: integer
+          example: 1
       - name: report_id
         in: path
         required: true
         schema:
           type: integer
+          example: 1
 
     get:
       summary: Get a single place report
@@ -1112,12 +1202,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PlaceReportDetail'
+              example:
+                id: 1
+                user_id: 2
+                place_id: 1
+                report_type: 3
+                timestamp: "2024-01-15T12:00:00Z"
         '404':
           description: Report not found or does not belong to this place
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDescription'
+              example:
+                description: "Report not found"
 
     put:
       summary: Update a place report (owner only)
@@ -1144,8 +1240,8 @@ paths:
           description: Authentication required
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                error: "Authentication required"
         '403':
           description: Not the owner of this report
           content:
@@ -1156,8 +1252,8 @@ paths:
           description: Report not found
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDescription'
+              example:
+                description: "Report not found"
         '415':
           description: Content type must be application/json
           content:
@@ -1174,11 +1270,13 @@ paths:
         required: true
         schema:
           type: integer
+          example: 1
       - name: review_id
         in: path
         required: true
         schema:
           type: integer
+          example: 1
 
     get:
       summary: Get all reports for a review
@@ -1196,13 +1294,13 @@ paths:
                   user_id: 3
                   review_id: 1
                   report_type: 2
-                  timestamp: "2024-01-15T13:00:00"
+                  timestamp: "2024-01-15T13:00:00Z"
         '404':
           description: No reports found for this review
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDescription'
+              example:
+                description: "Review reports not found"
 
     post:
       summary: Report a review
@@ -1229,20 +1327,20 @@ paths:
           description: Invalid report_type or review does not belong to this place
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                error: "Invalid report_type"
         '401':
           description: Authentication required
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                error: "Authentication required"
         '404':
           description: Review not found
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDescription'
+              example:
+                description: "Review not found"
         '415':
           description: Content type must be application/json
           content:
@@ -1257,16 +1355,19 @@ paths:
         required: true
         schema:
           type: integer
+          example: 1
       - name: review_id
         in: path
         required: true
         schema:
           type: integer
+          example: 1
       - name: report_id
         in: path
         required: true
         schema:
           type: integer
+          example: 1
 
     get:
       summary: Get a single review report
@@ -1277,12 +1378,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ReviewReportDetail'
+              example:
+                id: 1
+                user_id: 3
+                review_id: 1
+                report_type: 2
+                timestamp: "2024-01-15T13:00:00Z"
         '404':
           description: Report not found
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDescription'
+              example:
+                description: "Report not found"
 
     put:
       summary: Update a review report (owner only)
@@ -1309,8 +1416,8 @@ paths:
           description: Authentication required
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                error: "Authentication required"
         '403':
           description: Not the owner of this report
           content:
@@ -1321,8 +1428,8 @@ paths:
           description: Report not found
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDescription'
+              example:
+                description: "Report not found"
         '415':
           description: Content type must be application/json
           content:
@@ -1339,11 +1446,13 @@ paths:
         required: true
         schema:
           type: integer
+          example: 1
       - name: image_id
         in: path
         required: true
         schema:
           type: integer
+          example: 1
 
     get:
       summary: Get all reports for an image
@@ -1361,13 +1470,13 @@ paths:
                   user_id: 3
                   image_id: 1
                   report_type: 2
-                  timestamp: "2024-01-15T14:00:00"
+                  timestamp: "2024-01-15T14:00:00Z"
         '404':
           description: No reports found for this image
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDescription'
+              example:
+                description: "Image reports not found"
 
     post:
       summary: Report an image
@@ -1394,20 +1503,20 @@ paths:
           description: Invalid report_type or image does not belong to this place
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                error: "Invalid report_type"
         '401':
           description: Authentication required
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                error: "Authentication required"
         '404':
           description: Image not found
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDescription'
+              example:
+                description: "Image not found"
         '415':
           description: Content type must be application/json
           content:
@@ -1422,16 +1531,19 @@ paths:
         required: true
         schema:
           type: integer
+          example: 1
       - name: image_id
         in: path
         required: true
         schema:
           type: integer
+          example: 1
       - name: report_id
         in: path
         required: true
         schema:
           type: integer
+          example: 1
 
     get:
       summary: Get a single image report
@@ -1442,12 +1554,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ImageReportDetail'
+              example:
+                id: 1
+                user_id: 3
+                image_id: 1
+                report_type: 2
+                timestamp: "2024-01-15T14:00:00Z"
         '404':
           description: Report not found
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDescription'
+              example:
+                description: "Report not found"
 
     put:
       summary: Update an image report (owner only)
@@ -1474,8 +1592,8 @@ paths:
           description: Authentication required
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              example:
+                error: "Authentication required"
         '403':
           description: Not the owner of this report
           content:
@@ -1486,8 +1604,8 @@ paths:
           description: Report not found
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDescription'
+              example:
+                description: "Report not found"
         '415':
           description: Content type must be application/json
           content:
