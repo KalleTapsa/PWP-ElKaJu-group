@@ -17,7 +17,7 @@ components:
       description: API key obtained from POST /api/users/
 
   schemas:
-    Place:
+    PlaceInput:
       type: object
       properties:
         name:
@@ -79,7 +79,7 @@ components:
           format: float
           example: 4.0
 
-    PlaceDetail:
+    Place:
       type: object
       properties:
         id:
@@ -122,7 +122,7 @@ components:
           format: float
           example: 4.0
 
-    Review:
+    ReviewInput:
       type: object
       properties:
         rating:
@@ -136,7 +136,7 @@ components:
       required:
         - rating
 
-    ReviewDetail:
+    Review:
       type: object
       properties:
         id:
@@ -165,7 +165,7 @@ components:
           format: float
           example: 4.0
 
-    ImageDetail:
+    Image:
       type: object
       properties:
         id:
@@ -192,7 +192,7 @@ components:
           type: string
           example: "/api/uploads/3f2e1a-photo.jpg"
 
-    Report:
+    ReportInput:
       type: object
       properties:
         report_type:
@@ -203,7 +203,7 @@ components:
       required:
         - report_type
 
-    PlaceReportDetail:
+    ReportPlace:
       type: object
       properties:
         id:
@@ -225,7 +225,7 @@ components:
           format: date-time
           example: "2024-01-15T12:00:00Z"
 
-    ReviewReportDetail:
+    ReportReview:
       type: object
       properties:
         id:
@@ -247,7 +247,7 @@ components:
           format: date-time
           example: "2024-01-15T13:00:00Z"
 
-    ImageReportDetail:
+    ReportImage:
       type: object
       properties:
         id:
@@ -371,7 +371,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ReviewDetail'
+                  $ref: '#/components/schemas/Review'
               example:
                 - id: 1
                   user_id: 1
@@ -399,7 +399,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ImageDetail'
+                  $ref: '#/components/schemas/Image'
               example:
                 - id: 1
                   user_id: 1
@@ -429,7 +429,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/PlaceReportDetail'
+                  $ref: '#/components/schemas/ReportPlace'
               example:
                 - id: 1
                   user_id: 1
@@ -469,7 +469,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ReviewReportDetail'
+                  $ref: '#/components/schemas/ReportReview'
               example:
                 - id: 1
                   user_id: 1
@@ -609,7 +609,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Place'
+              $ref: '#/components/schemas/PlaceInput'
             example:
               name: "Mysterious Cave"
               description: "A hidden cave with unusual rock formations"
@@ -670,7 +670,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PlaceDetail'
+                $ref: '#/components/schemas/Place'
               example:
                 id: 1
                 user_id: 1
@@ -700,7 +700,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Place'
+              $ref: '#/components/schemas/PlaceInput'
             example:
               description: "Updated description"
               city: "Espoo"
@@ -790,7 +790,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ReviewDetail'
+                  $ref: '#/components/schemas/Review'
               example:
                 - id: 1
                   user_id: 2
@@ -809,7 +809,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Review'
+              $ref: '#/components/schemas/ReviewInput'
             example:
               rating: 5
               text: "Absolutely breathtaking!"
@@ -869,7 +869,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReviewDetail'
+                $ref: '#/components/schemas/Review'
               example:
                 id: 1
                 user_id: 2
@@ -937,7 +937,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ImageDetail'
+                  $ref: '#/components/schemas/Image'
               example:
                 - id: 1
                   user_id: 2
@@ -1022,7 +1022,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ImageDetail'
+                $ref: '#/components/schemas/Image'
               example:
                 id: 1
                 user_id: 2
@@ -1115,7 +1115,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/PlaceReportDetail'
+                  $ref: '#/components/schemas/ReportPlace'
               example:
                 - id: 1
                   user_id: 2
@@ -1142,7 +1142,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Report'
+              $ref: '#/components/schemas/ReportInput'
             example:
               report_type: 3
       responses:
@@ -1201,7 +1201,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PlaceReportDetail'
+                $ref: '#/components/schemas/ReportPlace'
               example:
                 id: 1
                 user_id: 2
@@ -1225,7 +1225,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Report'
+              $ref: '#/components/schemas/ReportInput'
             example:
               report_type: 2
       responses:
@@ -1288,7 +1288,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ReviewReportDetail'
+                  $ref: '#/components/schemas/ReportReview'
               example:
                 - id: 1
                   user_id: 3
@@ -1312,7 +1312,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Report'
+              $ref: '#/components/schemas/ReportInput'
             example:
               report_type: 2
       responses:
@@ -1377,7 +1377,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReviewReportDetail'
+                $ref: '#/components/schemas/ReportReview'
               example:
                 id: 1
                 user_id: 3
@@ -1401,7 +1401,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Report'
+              $ref: '#/components/schemas/ReportInput'
             example:
               report_type: 1
       responses:
@@ -1488,7 +1488,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Report'
+              $ref: '#/components/schemas/ReportInput'
             example:
               report_type: 2
       responses:
@@ -1577,7 +1577,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Report'
+              $ref: '#/components/schemas/ReportInput'
             example:
               report_type: 3
       responses:

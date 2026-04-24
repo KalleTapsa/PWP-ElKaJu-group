@@ -44,23 +44,13 @@ api.add_resource(ReportPlaceById, "/places/<int:place_id>/reports/<int:report_id
 api.add_resource(ReportPlaceByUser, "/users/<int:user_id>/reports/places/")
 
 # Report Review endpoints
-api.add_resource(
-    AllReviewReports, "/places/<int:place_id>/reviews/<int:review_id>/reports/"
-)
-api.add_resource(
-    ReportReviewById,
-    "/places/<int:place_id>/reviews/<int:review_id>/reports/<int:report_id>/",
-)
+api.add_resource(AllReviewReports, "/places/<int:place_id>/reviews/<int:review_id>/reports/")
+api.add_resource(ReportReviewById, "/places/<int:place_id>/reviews/<int:review_id>/reports/<int:report_id>/")
 api.add_resource(ReportReviewByUser, "/users/<int:user_id>/reports/reviews/")
 
 # Report Image endpoints
-api.add_resource(
-    AllImageReports, "/places/<int:place_id>/images/<image:image>/reports/"
-)
-api.add_resource(
-    ReportImageById,
-    "/places/<int:place_id>/images/<image:image>/reports/<int:report_id>/",
-)
+api.add_resource(AllImageReports, "/places/<int:place_id>/images/<image:image>/reports/")
+api.add_resource(ReportImageById,"/places/<int:place_id>/images/<image:image>/reports/<int:report_id>/")
 api.add_resource(ReportImageByUser, "/users/<int:user_id>/reports/images/")
 
 

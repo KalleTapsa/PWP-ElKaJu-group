@@ -256,7 +256,6 @@ class AllReviewReports(Resource):
                 jsonify({"error": "Request content type must be JSON"}), 415
             )
 
-        # Only user_id and report_type are required; place_id/review_id come from URL
         required_fields = ["report_type"]
         if not request.json or not all(
             field in request.json for field in required_fields
