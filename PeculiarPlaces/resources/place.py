@@ -188,7 +188,7 @@ class PlaceItem(Resource):
         require_ownership(place.user_id)
 
         delete_place(place.id)
-        return make_response("", 204)
+        return {"message": "Place deleted successfully"}, 200
 
 
 class PlacesByUser(Resource):

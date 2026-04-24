@@ -748,8 +748,12 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '204':
+        '200':
           description: Place deleted successfully
+          content:
+            application/json:
+              example:
+                message: "Place deleted successfully"
         '401':
           description: Authentication required
           content:
