@@ -509,7 +509,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ImageReportDetail'
+                  $ref: '#/components/schemas/ReportImage'
               example:
                 - id: 1
                   user_id: 1
@@ -1464,7 +1464,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ImageReportDetail'
+                  $ref: '#/components/schemas/ReportImage'
               example:
                 - id: 1
                   user_id: 3
@@ -1553,7 +1553,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ImageReportDetail'
+                $ref: '#/components/schemas/ReportImage'
               example:
                 id: 1
                 user_id: 3
