@@ -10,7 +10,6 @@ def require_ownership(user_id):
     """
     Checks that the current user is the owner of the resource.
     """
-    print(user_id, g.current_user.id)
     if not hasattr(g, "current_user"):
         raise Forbidden("Authentication required")
 
@@ -30,8 +29,10 @@ def login_required(f):
                 jsonify({"error": "Missing Authorization header required"}), 401
             )
 
-        header = header.lstrip("Bearer ")
-        header = header.lstrip("bearer ")
+        if header.startswith("Bearer "):
+            header = header[len("Bearer "):]
+        elif header.startswith("bearer "):
+            header = header[len("bearer "):]
 
         user = User.query.filter_by(api_key=header).first()
 

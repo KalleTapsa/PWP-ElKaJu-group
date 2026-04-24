@@ -1,0 +1,1496 @@
+openapi: 3.0.0
+info:
+  title: PeculiarPlaces API
+  description: API for discovering, sharing, and reviewing peculiar or interesting places.
+  version: 1.0.0
+servers:
+  - url: /api
+    description: Local development server
+
+security: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: API key obtained from POST /api/users/
+
+  schemas:
+    Place:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        address:
+          type: string
+        postal_code:
+          type: string
+        city:
+          type: string
+        latitude:
+          type: number
+          format: float
+        longitude:
+          type: number
+          format: float
+        application:
+          type: string
+      required:
+        - name
+        - latitude
+        - longitude
+
+    PlaceSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        latitude:
+          type: number
+          format: float
+        longitude:
+          type: number
+          format: float
+        category:
+          type: string
+        trust_score:
+          type: number
+          format: float
+
+    PlaceDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        address:
+          type: string
+        postal_code:
+          type: string
+        city:
+          type: string
+        latitude:
+          type: number
+          format: float
+        longitude:
+          type: number
+          format: float
+        application:
+          type: string
+        trust_score:
+          type: number
+          format: float
+
+    Review:
+      type: object
+      properties:
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        text:
+          type: string
+      required:
+        - rating
+
+    ReviewDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        place_id:
+          type: integer
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        text:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        trust_score:
+          type: number
+          format: float
+
+    ImageDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        place_id:
+          type: integer
+        description:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        trust_score:
+          type: number
+          format: float
+        image_url:
+          type: string
+
+    Report:
+      type: object
+      properties:
+        report_type:
+          type: integer
+          enum: [1, 2, 3]
+          description: "1=INCORRECT, 2=INAPPROPRIATE, 3=APPROPRIATE"
+      required:
+        - report_type
+
+    PlaceReportDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        place_id:
+          type: integer
+        report_type:
+          type: integer
+          enum: [1, 2, 3]
+          description: "1=INCORRECT, 2=INAPPROPRIATE, 3=APPROPRIATE"
+        timestamp:
+          type: string
+          format: date-time
+
+    ReviewReportDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        review_id:
+          type: integer
+        report_type:
+          type: integer
+          enum: [1, 2, 3]
+          description: "1=INCORRECT, 2=INAPPROPRIATE, 3=APPROPRIATE"
+        timestamp:
+          type: string
+          format: date-time
+
+    ImageReportDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        image_id:
+          type: integer
+        report_type:
+          type: integer
+          enum: [1, 2, 3]
+          description: "1=INCORRECT, 2=INAPPROPRIATE, 3=APPROPRIATE"
+        timestamp:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+
+    ErrorDescription:
+      type: object
+      properties:
+        description:
+          type: string
+
+paths:
+
+  # ── Users ──────────────────────────────────────────────────────────────────
+
+  /users/:
+    post:
+      summary: Register a new user
+      description: Creates a new user and returns a one-time API key.
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              example:
+                id: 1
+                api_key: "abc123secretkey"
+                message: "User created successfully. Save your API key, it will not be shown again."
+
+  /users/{user_id}/:
+    parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: integer
+    delete:
+      summary: Delete own user account
+      description: Deletes the authenticated user's account and all associated data (places, reviews, images, reports).
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User deleted successfully
+          content:
+            application/json:
+              example:
+                message: "User and all associated data deleted successfully"
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Cannot delete another user's account
+          content:
+            application/json:
+              example:
+                error: "You can only delete your own user"
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/{user_id}/places/:
+    parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: Get all places by a user
+      responses:
+        '200':
+          description: List of places created by the user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlaceSummary'
+              example:
+                - id: 1
+                  name: "Mysterious Cave"
+                  latitude: 60.1699
+                  longitude: 24.9384
+                  category: "nature"
+                  trust_score: 4.0
+
+  /users/{user_id}/reviews/:
+    parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: Get all reviews by a user
+      responses:
+        '200':
+          description: List of reviews created by the user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReviewDetail'
+              example:
+                - id: 1
+                  user_id: 1
+                  place_id: 2
+                  rating: 4
+                  text: "Really cool spot!"
+                  timestamp: "2024-01-15T12:00:00"
+                  trust_score: 4.0
+
+  /users/{user_id}/images/:
+    parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: Get all images uploaded by a user
+      responses:
+        '200':
+          description: List of images uploaded by the user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ImageDetail'
+              example:
+                - id: 1
+                  user_id: 1
+                  place_id: 2
+                  description: "Entrance to the cave"
+                  timestamp: "2024-01-15T12:00:00"
+                  trust_score: 4.0
+                  image_url: "/api/uploads/uuid-filename.jpg"
+
+  /users/{user_id}/reports/places/:
+    parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: Get all place reports by a user (own reports only)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of place reports filed by the user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlaceReportDetail'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Access denied (shown as not found)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDescription'
+
+  /users/{user_id}/reports/reviews/:
+    parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: Get all review reports by a user (own reports only)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of review reports filed by the user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReviewReportDetail'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Access denied (shown as not found)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDescription'
+
+  /users/{user_id}/reports/images/:
+    parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: Get all image reports by a user (own reports only)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of image reports filed by the user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ImageReportDetail'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Access denied (shown as not found)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDescription'
+
+  # ── Places ─────────────────────────────────────────────────────────────────
+
+  /places/:
+    get:
+      summary: Get all places
+      description: Returns a list of places. Supports filtering by trust score, location radius, category, or application.
+      parameters:
+        - name: trust_score
+          in: query
+          description: Minimum trust score filter (default 0)
+          schema:
+            type: number
+            format: float
+            default: 0
+        - name: latitude
+          in: query
+          description: Center latitude for radius search
+          schema:
+            type: number
+            format: float
+        - name: longitude
+          in: query
+          description: Center longitude for radius search
+          schema:
+            type: number
+            format: float
+        - name: radius
+          in: query
+          description: Search radius in kilometres (used with latitude and longitude)
+          schema:
+            type: number
+            format: float
+        - name: category
+          in: query
+          description: Filter by category
+          schema:
+            type: string
+        - name: application
+          in: query
+          description: Filter by application name
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of places
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlaceSummary'
+              example:
+                - id: 1
+                  name: "Mysterious Cave"
+                  latitude: 60.1699
+                  longitude: 24.9384
+                  category: "nature"
+                  trust_score: 4.0
+                - id: 2
+                  name: "Abandoned Factory"
+                  latitude: 60.2052
+                  longitude: 24.6559
+                  category: "urban"
+                  trust_score: 3.6
+
+    post:
+      summary: Create a new place
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Place'
+            example:
+              name: "Mysterious Cave"
+              description: "A hidden cave with unusual rock formations"
+              category: "nature"
+              address: "Forest Road 1"
+              postal_code: "00100"
+              city: "Helsinki"
+              latitude: 60.1699
+              longitude: 24.9384
+              application: "MyApp"
+      responses:
+        '201':
+          description: Place created successfully
+          headers:
+            Location:
+              description: URL of the newly created place
+              schema:
+                type: string
+          content:
+            application/json:
+              example:
+                id: 1
+                message: "Place created successfully"
+        '400':
+          description: Missing or invalid fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: Content type must be application/json
+          content:
+            application/json:
+              example:
+                error: "Request content type must be JSON"
+
+  /places/{place_id}/:
+    parameters:
+      - name: place_id
+        in: path
+        required: true
+        schema:
+          type: integer
+
+    get:
+      summary: Get a single place
+      responses:
+        '200':
+          description: Place details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaceDetail'
+              example:
+                id: 1
+                user_id: 1
+                name: "Mysterious Cave"
+                description: "A hidden cave with unusual rock formations"
+                category: "nature"
+                address: "Forest Road 1"
+                postal_code: "00100"
+                city: "Helsinki"
+                latitude: 60.1699
+                longitude: 24.9384
+                application: "MyApp"
+                trust_score: 4.0
+        '404':
+          description: Place not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDescription'
+
+    put:
+      summary: Update a place (owner only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Place'
+            example:
+              description: "Updated description"
+              city: "Espoo"
+      responses:
+        '200':
+          description: Place updated successfully
+          content:
+            application/json:
+              example:
+                message: "Place updated successfully"
+        '400':
+          description: Invalid field values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not the owner of this place
+          content:
+            application/json:
+              example:
+                error: "You do not own this resource"
+        '404':
+          description: Place not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDescription'
+        '415':
+          description: Content type must be application/json
+          content:
+            application/json:
+              example:
+                error: "Request content type must be JSON"
+
+    delete:
+      summary: Delete a place (owner only)
+      description: Deletes the place and all associated reviews, images, and reports.
+      security:
+        - BearerAuth: []
+      responses:
+        '204':
+          description: Place deleted successfully
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not the owner of this place
+          content:
+            application/json:
+              example:
+                error: "You do not own this resource"
+        '404':
+          description: Place not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDescription'
+
+  # ── Reviews ────────────────────────────────────────────────────────────────
+
+  /places/{place_id}/reviews/:
+    parameters:
+      - name: place_id
+        in: path
+        required: true
+        schema:
+          type: integer
+
+    get:
+      summary: Get all reviews for a place
+      responses:
+        '200':
+          description: List of reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReviewDetail'
+              example:
+                - id: 1
+                  user_id: 2
+                  place_id: 1
+                  rating: 5
+                  text: "Absolutely breathtaking!"
+                  timestamp: "2024-01-15T12:00:00"
+                  trust_score: 4.0
+
+    post:
+      summary: Create a review for a place
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Review'
+            example:
+              rating: 5
+              text: "Absolutely breathtaking!"
+      responses:
+        '201':
+          description: Review created successfully
+          content:
+            application/json:
+              example:
+                id: 1
+                message: "Review created successfully"
+        '400':
+          description: Missing or invalid fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Place not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDescription'
+        '415':
+          description: Content type must be application/json
+          content:
+            application/json:
+              example:
+                error: "Request content type must be JSON"
+
+  /places/{place_id}/reviews/{review_id}/:
+    parameters:
+      - name: place_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: review_id
+        in: path
+        required: true
+        schema:
+          type: integer
+
+    get:
+      summary: Get a single review
+      responses:
+        '200':
+          description: Review details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewDetail'
+              example:
+                id: 1
+                user_id: 2
+                place_id: 1
+                rating: 5
+                text: "Absolutely breathtaking!"
+                timestamp: "2024-01-15T12:00:00"
+                trust_score: 4.0
+        '404':
+          description: Review not found or does not belong to this place
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDescription'
+
+    delete:
+      summary: Delete a review (owner only)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Review deleted successfully
+          content:
+            application/json:
+              example:
+                message: "Review deleted successfully"
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not the owner of this review
+          content:
+            application/json:
+              example:
+                error: "You do not own this resource"
+        '404':
+          description: Review not found or does not belong to this place
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDescription'
+
+  # ── Images ─────────────────────────────────────────────────────────────────
+
+  /places/{place_id}/images/:
+    parameters:
+      - name: place_id
+        in: path
+        required: true
+        schema:
+          type: integer
+
+    get:
+      summary: Get all images for a place
+      description: Results are cached per place.
+      responses:
+        '200':
+          description: List of images
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ImageDetail'
+              example:
+                - id: 1
+                  user_id: 2
+                  place_id: 1
+                  description: "Entrance to the cave"
+                  timestamp: "2024-01-15T12:00:00"
+                  trust_score: 4.0
+                  image_url: "/api/uploads/uuid-filename.jpg"
+
+    post:
+      summary: Upload an image for a place
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Image file (jpg, jpeg, or png only)
+                description:
+                  type: string
+                  description: Optional description of the image
+              required:
+                - file
+      responses:
+        '201':
+          description: Image uploaded successfully
+          content:
+            application/json:
+              example:
+                id: 1
+                message: "Image uploaded successfully"
+        '400':
+          description: No file provided or unsupported file type
+          content:
+            application/json:
+              examples:
+                no_file:
+                  value:
+                    error: "No file provided"
+                bad_type:
+                  value:
+                    error: "File type not allowed. Only jpg, jpeg, and png allowed"
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Place not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDescription'
+
+  /places/{place_id}/images/{image_id}/:
+    parameters:
+      - name: place_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: image_id
+        in: path
+        required: true
+        schema:
+          type: integer
+
+    get:
+      summary: Get a single image
+      responses:
+        '200':
+          description: Image details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageDetail'
+              example:
+                id: 1
+                user_id: 2
+                place_id: 1
+                description: "Entrance to the cave"
+                timestamp: "2024-01-15T12:00:00"
+                trust_score: 4.0
+                image_url: "/api/uploads/uuid-filename.jpg"
+        '404':
+          description: Image not found or does not belong to this place
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDescription'
+
+    delete:
+      summary: Delete an image (owner only)
+      description: Deletes the image record and the file from storage.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Image deleted successfully
+          content:
+            application/json:
+              example:
+                message: "Image deleted successfully"
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not the owner of this image
+          content:
+            application/json:
+              example:
+                error: "You do not own this resource"
+        '404':
+          description: Image not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDescription'
+
+  /uploads/{filename}:
+    parameters:
+      - name: filename
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Serve an uploaded image file
+      responses:
+        '200':
+          description: Image file content
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: File not found
+
+  # ── Place Reports ───────────────────────────────────────────────────────────
+
+  /places/{place_id}/reports/:
+    parameters:
+      - name: place_id
+        in: path
+        required: true
+        schema:
+          type: integer
+
+    get:
+      summary: Get all reports for a place
+      responses:
+        '200':
+          description: List of place reports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlaceReportDetail'
+              example:
+                - id: 1
+                  user_id: 2
+                  place_id: 1
+                  report_type: 3
+                  timestamp: "2024-01-15T12:00:00"
+        '404':
+          description: No reports found for this place
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDescription'
+
+    post:
+      summary: Report a place
+      description: >
+        Creates or updates a report for the place. Each user can file one report per place.
+        Recalculates the place trust_score after submission.
+        report_type weights: APPROPRIATE(3) = +0.4, INCORRECT(1) = -0.4, INAPPROPRIATE(2) = -0.8.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Report'
+            example:
+              report_type: 3
+      responses:
+        '201':
+          description: Place report created or updated
+          content:
+            application/json:
+              example:
+                id: 1
+                message: "Place report created successfully"
+        '400':
+          description: Invalid report_type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Place not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDescription'
+        '415':
+          description: Content type must be application/json
+          content:
+            application/json:
+              example:
+                error: "Request content type must be JSON"
+
+  /places/{place_id}/reports/{report_id}/:
+    parameters:
+      - name: place_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: report_id
+        in: path
+        required: true
+        schema:
+          type: integer
+
+    get:
+      summary: Get a single place report
+      responses:
+        '200':
+          description: Place report details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaceReportDetail'
+        '404':
+          description: Report not found or does not belong to this place
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDescription'
+
+    put:
+      summary: Update a place report (owner only)
+      description: Recalculates the place trust_score after update.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Report'
+            example:
+              report_type: 2
+      responses:
+        '200':
+          description: Place report updated successfully
+          content:
+            application/json:
+              example:
+                id: 1
+                message: "Place report updated successfully"
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not the owner of this report
+          content:
+            application/json:
+              example:
+                error: "You do not own this resource"
+        '404':
+          description: Report not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDescription'
+        '415':
+          description: Content type must be application/json
+          content:
+            application/json:
+              example:
+                error: "Request content type must be JSON"
+
+  # ── Review Reports ──────────────────────────────────────────────────────────
+
+  /places/{place_id}/reviews/{review_id}/reports/:
+    parameters:
+      - name: place_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: review_id
+        in: path
+        required: true
+        schema:
+          type: integer
+
+    get:
+      summary: Get all reports for a review
+      responses:
+        '200':
+          description: List of review reports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReviewReportDetail'
+              example:
+                - id: 1
+                  user_id: 3
+                  review_id: 1
+                  report_type: 2
+                  timestamp: "2024-01-15T13:00:00"
+        '404':
+          description: No reports found for this review
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDescription'
+
+    post:
+      summary: Report a review
+      description: Creates or updates a report for the review. Recalculates review trust_score after submission.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Report'
+            example:
+              report_type: 2
+      responses:
+        '201':
+          description: Review report created or updated
+          content:
+            application/json:
+              example:
+                id: 1
+                message: "Review report created/updated successfully"
+        '400':
+          description: Invalid report_type or review does not belong to this place
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Review not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDescription'
+        '415':
+          description: Content type must be application/json
+          content:
+            application/json:
+              example:
+                error: "Request content type must be JSON"
+
+  /places/{place_id}/reviews/{review_id}/reports/{report_id}/:
+    parameters:
+      - name: place_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: review_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: report_id
+        in: path
+        required: true
+        schema:
+          type: integer
+
+    get:
+      summary: Get a single review report
+      responses:
+        '200':
+          description: Review report details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewReportDetail'
+        '404':
+          description: Report not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDescription'
+
+    put:
+      summary: Update a review report (owner only)
+      description: Recalculates the review trust_score after update.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Report'
+            example:
+              report_type: 1
+      responses:
+        '200':
+          description: Review report updated successfully
+          content:
+            application/json:
+              example:
+                id: 1
+                message: "Review report updated successfully"
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not the owner of this report
+          content:
+            application/json:
+              example:
+                error: "You do not own this resource"
+        '404':
+          description: Report not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDescription'
+        '415':
+          description: Content type must be application/json
+          content:
+            application/json:
+              example:
+                error: "Request content type must be JSON"
+
+  # ── Image Reports ───────────────────────────────────────────────────────────
+
+  /places/{place_id}/images/{image_id}/reports/:
+    parameters:
+      - name: place_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: image_id
+        in: path
+        required: true
+        schema:
+          type: integer
+
+    get:
+      summary: Get all reports for an image
+      responses:
+        '200':
+          description: List of image reports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ImageReportDetail'
+              example:
+                - id: 1
+                  user_id: 3
+                  image_id: 1
+                  report_type: 2
+                  timestamp: "2024-01-15T14:00:00"
+        '404':
+          description: No reports found for this image
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDescription'
+
+    post:
+      summary: Report an image
+      description: Creates a report for the image. Recalculates image trust_score after submission.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Report'
+            example:
+              report_type: 2
+      responses:
+        '201':
+          description: Image report created successfully
+          content:
+            application/json:
+              example:
+                id: 1
+                message: "Image report created successfully"
+        '400':
+          description: Invalid report_type or image does not belong to this place
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Image not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDescription'
+        '415':
+          description: Content type must be application/json
+          content:
+            application/json:
+              example:
+                error: "Request content type must be JSON"
+
+  /places/{place_id}/images/{image_id}/reports/{report_id}/:
+    parameters:
+      - name: place_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: image_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: report_id
+        in: path
+        required: true
+        schema:
+          type: integer
+
+    get:
+      summary: Get a single image report
+      responses:
+        '200':
+          description: Image report details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageReportDetail'
+        '404':
+          description: Report not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDescription'
+
+    put:
+      summary: Update an image report (owner only)
+      description: Recalculates the image trust_score after update.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Report'
+            example:
+              report_type: 3
+      responses:
+        '200':
+          description: Image report updated successfully
+          content:
+            application/json:
+              example:
+                id: 1
+                message: "Image report updated successfully"
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not the owner of this report
+          content:
+            application/json:
+              example:
+                error: "You do not own this resource"
+        '404':
+          description: Report not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDescription'
+        '415':
+          description: Content type must be application/json
+          content:
+            application/json:
+              example:
+                error: "Request content type must be JSON"
