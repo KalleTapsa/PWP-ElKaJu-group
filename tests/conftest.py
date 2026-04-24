@@ -75,8 +75,6 @@ class UserFactory(SQLAlchemyModelFactory):
         model = User
         sqlalchemy_session = None  # Will be set in fixture
 
-    username = factory.Sequence(lambda n: f"user{n}")
-    email = factory.Sequence(lambda n: f"user{n}@example.com")
     api_key = factory.Sequence(lambda n: f"key{n}")
 
 
@@ -110,7 +108,7 @@ class ReviewFactory(SQLAlchemyModelFactory):
         sqlalchemy_session = None
 
     rating = 5
-    comment = "Great place!"
+    text = "Great place!"
     place_id = factory.SubFactory(PlaceFactory)
     user_id = factory.SubFactory(UserFactory)
 
@@ -126,7 +124,7 @@ class ImageFactory(SQLAlchemyModelFactory):
         model = Image
         sqlalchemy_session = None
 
-    filename = factory.Sequence(lambda n: f"image{n}.jpg")
+    image_path = factory.Sequence(lambda n: f"image{n}.jpg")
     place_id = factory.SubFactory(PlaceFactory)
     user_id = factory.SubFactory(UserFactory)
 
