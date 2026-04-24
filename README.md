@@ -50,7 +50,10 @@ __Population Script:__
 "flask-sqlalchemy",
 "flask-caching",
 "flask-api-key",
+"flasgger",
 "pytest",
 "pytest-flask",
 "factory-boy",
 "pytest-cov"
+
+DOCUMENTATION IN http://127.0.0.1:5000/apidocs/

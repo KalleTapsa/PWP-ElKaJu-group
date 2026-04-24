@@ -1,8 +1,10 @@
 import os
+from pathlib import Path
 
 from flask import Flask
 from flask_caching import Cache
 from flask_sqlalchemy import SQLAlchemy
+from flasgger import Swagger
 
 db = SQLAlchemy()
 cache = Cache()
@@ -19,6 +21,11 @@ def create_app():
     app.config["CACHE_DIR"] = os.path.join(app.instance_path, "cache")
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "development_secret_key")
     app.config["UPLOAD_FOLDER"] = os.path.join(app.instance_path, "uploads")
+    app.config["SWAGGER"] = {
+        "title": "PeculiarPlaces API",
+        "openapi": "3.0.0",
+        "uiversion": 3,
+    }
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
     try:
@@ -39,4 +46,6 @@ def create_app():
     app.cli.add_command(models.init_db_command)
     app.register_blueprint(api_bp)
 
+    swagger = Swagger(app, template_file="doc/openapi.yml")
+    
     return app
