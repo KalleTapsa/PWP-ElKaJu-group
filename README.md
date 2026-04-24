@@ -26,4 +26,31 @@ __Database Setup:__
 __Population Script:__
 [setup_and_populate.py](https://github.com/user-attachments/files/25161808/setup_and_populate.py)
 
+# DELIVERY 3
 
+# HOW TO RUN (WINDOWS):
+1. *Navigate to PWP-ElKaJu-group folder*
+2. python -m venv venv
+3. venv\Scripts\activate
+4. pip install -e .
+5. flask --app PeculiarPlaces init-db
+6. flask --app PeculiarPlaces run --debug
+7. *The API can be found in http://127.0.0.1:5000/api/*
+
+# HOW TO RUN TESTS (WINDOWS):
+1. *Navigate to PWP-ElKaJu-group folder*
+2. python -m venv venv
+3. venv\Scripts\activate
+4. pip install -e .
+5. pytest
+
+# DEPENDENCIES:
+"flask==2.3.3",
+"flask-restful",
+"flask-sqlalchemy",
+"flask-caching",
+"flask-api-key",
+"pytest",
+"pytest-flask",
+"factory-boy",
+"pytest-cov"

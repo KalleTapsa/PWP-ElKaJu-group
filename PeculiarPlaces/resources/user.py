@@ -3,9 +3,9 @@ import secrets
 from flask import g
 from flask_restful import Resource
 
-from .. import db
-from ..authentication import login_required
-from ..models import User
+from PeculiarPlaces import db
+from PeculiarPlaces.authentication import login_required
+from PeculiarPlaces.models import User
 
 
 class Users(Resource):
@@ -17,7 +17,7 @@ class Users(Resource):
         """
         api_key = secrets.token_hex(32)
 
-        # No need to check for uniqueness since the sun will explode before we get a collision with 2^256 possible keys
+        # No need to check for uniqueness since 2^256 possible keys
 
         user = User(api_key=api_key)
         db.session.add(user)
