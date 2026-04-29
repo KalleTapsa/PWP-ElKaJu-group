@@ -11,6 +11,7 @@ from ..utils import (
     create_report_image,
     create_report_place,
     create_report_review,
+    get_place_by_id,
     get_report_image_by_id,
     get_report_images_by_image,
     get_report_images_by_user,
@@ -90,9 +91,9 @@ class AllPlaceReports(Resource):
 
     def get(self, place_id):
         """Get all reports for a specific place"""
+        if not get_place_by_id(place_id):
+            raise NotFound(description="Place not found")
         reports = get_report_places_by_place(place_id)
-        if not reports:
-            raise NotFound(description="Place reports not found for this place")
         res = [
             {
                 "id": report.id,
@@ -112,7 +113,6 @@ class AllPlaceReports(Resource):
             return make_response(
                 jsonify({"error": "Request content type must be JSON"}), 415
             )
-        # Only user_id and report_type are required, place_id comes from URL
         required_fields = ["report_type"]
         if not request.json or not all(
             field in request.json for field in required_fields
@@ -122,9 +122,12 @@ class AllPlaceReports(Resource):
         try:
             report_type = ReportType(request.json["report_type"])
 
+            if not get_place_by_id(place_id):
+                raise NotFound(description="Place not found")
+
             report = create_report_place(
                 user_id=g.current_user.id,
-                place_id=place_id,  # comes from URL
+                place_id=place_id,
                 report_type=report_type,
             )
 
@@ -173,10 +176,13 @@ class ReportReviewById(Resource):
 
     method_decorators = {"get": [], "put": [login_required]}
 
-    def get(self, place_id, report_id):
+    def get(self, place_id, review_id, report_id):
         """Get a specific review report by its ID"""
+        review = get_review_by_id(review_id)
+        if not review or review.place_id != place_id:
+            raise NotFound(description="Review not found")
         report = get_report_review_by_id(report_id)
-        if not report or report.place_id != place_id:
+        if not report or report.review_id != review_id:
             raise NotFound(description="Review report not found")
         return {
             "id": report.id,
@@ -186,7 +192,7 @@ class ReportReviewById(Resource):
             "timestamp": report.timestamp.isoformat(),
         }, 200
 
-    def put(self, place_id, report_id):
+    def put(self, place_id, review_id, report_id):
         """Update a review report"""
         if request.content_type != "application/json":
             return make_response(
@@ -201,8 +207,11 @@ class ReportReviewById(Resource):
 
         try:
             report_type = ReportType(request.json["report_type"])
+            review = get_review_by_id(review_id)
+            if not review or review.place_id != place_id:
+                raise NotFound(description="Review not found")
             report = get_report_review_by_id(report_id)
-            if not report or report.place_id != place_id:
+            if not report or report.review_id != review_id:
                 raise NotFound(description="Review report not found")
 
             require_ownership(report.user_id)
@@ -233,9 +242,10 @@ class AllReviewReports(Resource):
 
     def get(self, place_id, review_id):
         """Get all reports for a specific review"""
+        review = get_review_by_id(review_id)
+        if not review or review.place_id != place_id:
+            raise NotFound(description="Review not found")
         reports = get_report_reviews_by_review(review_id)
-        if not reports:
-            raise NotFound(description="Review reports not found for this review")
         res = [
             {
                 "id": report.id,
@@ -267,7 +277,7 @@ class AllReviewReports(Resource):
 
             review = get_review_by_id(review_id)
             if not review or review.place_id != place_id:
-                raise BadRequest(description="Review not found for this place")
+                raise NotFound(description="Review not found")
 
             report = create_report_review(
                 user_id=g.current_user.id, review_id=review_id, report_type=report_type
@@ -392,8 +402,6 @@ class AllImageReports(Resource):
             raise BadRequest(description="Image not found for this place")
 
         reports = get_report_images_by_image(image.id)
-        if not reports:
-            raise NotFound(description="Image reports not found for this place")
         res = [
             {
                 "id": report.id,

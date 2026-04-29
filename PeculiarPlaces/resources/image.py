@@ -11,6 +11,8 @@ from ..utils import (
     delete_image,
     get_images_by_place,
     get_images_by_user,
+    get_place_by_id,
+    get_user_by_id,
 )
 
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png"}
@@ -29,6 +31,8 @@ class ImageCollection(Resource):
 
     def get(self, place_id):
         """Get all images for a specific place"""
+        if not get_place_by_id(place_id):
+            raise NotFound(description="Place not found")
         if place_id in IMAGE_CACHE:
             return IMAGE_CACHE[place_id], 200
 
@@ -65,13 +69,12 @@ class ImageCollection(Resource):
                 "error": "File type not allowed. Only jpg, jpeg, and png allowed"
             }, 400
 
-        if not g.current_user or not place_id:
-            raise BadRequest(
-                description="Missing required fields: 'user_id' and 'place_id'"
-            )
+        if not get_place_by_id(place_id):
+            raise NotFound(description="Place not found")
 
         user_id = g.current_user.id
 
+        filepath = None
         try:
             ext = file.filename.rsplit(".", 1)[1].lower()
             unique_filename = f"{uuid.uuid4().hex}.{ext}"
@@ -92,7 +95,7 @@ class ImageCollection(Resource):
 
             return {"id": image.id, "message": "Image uploaded successfully"}, 201
         except Exception as e:
-            if os.path.isfile(filepath):
+            if filepath and os.path.isfile(filepath):
                 os.remove(filepath)
             raise BadRequest(description=str(e))
 
@@ -143,6 +146,8 @@ class ImagesByUser(Resource):
 
     def get(self, user_id):
         """Get all images by a specific user"""
+        if not get_user_by_id(user_id):
+            raise NotFound(description="User not found")
         images = get_images_by_user(user_id)
         res = [
             {

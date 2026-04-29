@@ -1,8 +1,6 @@
-"""Resource for handling places."""
-
 from flask import g, jsonify, make_response, request
 from flask_restful import Resource
-from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import BadRequest, NotFound
 
 from PeculiarPlaces import db
 from PeculiarPlaces.authentication import login_required, require_ownership
@@ -13,10 +11,12 @@ from PeculiarPlaces.utils import (
     get_places_by_application,
     get_places_by_category,
     get_places_by_user,
+    get_user_by_id,
 )
 
 
 class Places(Resource):
+    """Resource for handling places."""
     method_decorators = {"get": [], "post": [login_required]}
 
     def get(self):
@@ -194,6 +194,8 @@ class PlaceItem(Resource):
 class PlacesByUser(Resource):
     def get(self, user_id):
         """Get all places by a specific user"""
+        if not get_user_by_id(user_id):
+            raise NotFound(description="User not found")
         places = get_places_by_user(user_id)
         res = [
             {

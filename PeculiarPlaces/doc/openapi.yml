@@ -352,6 +352,12 @@ paths:
                   longitude: 24.9384
                   category: "nature"
                   trust_score: 4.0
+        '404':
+          description: User not found
+          content:
+            application/json:
+              example:
+                description: "User not found"
 
   /users/{user_id}/reviews/:
     parameters:
@@ -380,6 +386,12 @@ paths:
                   text: "Really cool spot!"
                   timestamp: "2024-01-15T12:00:00Z"
                   trust_score: 4.0
+        '404':
+          description: User not found
+          content:
+            application/json:
+              example:
+                description: "User not found"
 
   /users/{user_id}/images/:
     parameters:
@@ -408,6 +420,12 @@ paths:
                   timestamp: "2024-01-15T12:00:00Z"
                   trust_score: 4.0
                   image_url: "/api/uploads/3f2e1a-photo.jpg"
+        '404':
+          description: User not found
+          content:
+            application/json:
+              example:
+                description: "User not found"
 
   /users/{user_id}/reports/places/:
     parameters:
@@ -803,6 +821,12 @@ paths:
                   text: "Absolutely breathtaking!"
                   timestamp: "2024-01-15T12:00:00Z"
                   trust_score: 4.0
+        '404':
+          description: Place not found
+          content:
+            application/json:
+              example:
+                description: "Place not found"
 
     post:
       summary: Create a review for a place
@@ -950,6 +974,12 @@ paths:
                   timestamp: "2024-01-15T12:00:00Z"
                   trust_score: 4.0
                   image_url: "/api/uploads/3f2e1a-photo.jpg"
+        '404':
+          description: Place not found
+          content:
+            application/json:
+              example:
+                description: "Place not found"
 
     post:
       summary: Upload an image for a place
@@ -1126,13 +1156,6 @@ paths:
                   place_id: 1
                   report_type: 3
                   timestamp: "2024-01-15T12:00:00Z"
-        '404':
-          description: No reports found for this place
-          content:
-            application/json:
-              example:
-                description: "Place reports not found for this place"
-
     post:
       summary: Report a place
       description: >
@@ -1299,13 +1322,6 @@ paths:
                   review_id: 1
                   report_type: 2
                   timestamp: "2024-01-15T13:00:00Z"
-        '404':
-          description: No reports found for this review
-          content:
-            application/json:
-              example:
-                description: "Review reports not found"
-
     post:
       summary: Report a review
       description: Creates or updates a report for the review. Recalculates review trust_score after submission.
@@ -1475,13 +1491,6 @@ paths:
                   image_id: 1
                   report_type: 2
                   timestamp: "2024-01-15T14:00:00Z"
-        '404':
-          description: No reports found for this image
-          content:
-            application/json:
-              example:
-                description: "Image reports not found"
-
     post:
       summary: Report an image
       description: Creates a report for the image. Recalculates image trust_score after submission.

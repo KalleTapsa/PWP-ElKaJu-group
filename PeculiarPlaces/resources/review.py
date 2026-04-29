@@ -6,9 +6,11 @@ from ..authentication import login_required, require_ownership
 from ..utils import (
     create_review,
     delete_review,
+    get_place_by_id,
     get_review_by_id,
     get_reviews_by_place,
     get_reviews_by_user,
+    get_user_by_id,
 )
 
 
@@ -51,6 +53,8 @@ class PlaceReviews(Resource):
 
     def get(self, place_id):
         """Get all reviews for a specific place"""
+        if not get_place_by_id(place_id):
+            raise NotFound(description="Place not found")
         reviews = get_reviews_by_place(place_id)
         res = [
             {
@@ -81,6 +85,9 @@ class PlaceReviews(Resource):
         ):
             raise BadRequest(description=f"Missing required fields: {required_fields}")
 
+        if not get_place_by_id(place_id):
+            raise NotFound(description="Place not found")
+
         try:
             rating = int(request.json["rating"])
 
@@ -110,6 +117,8 @@ class ReviewsByUser(Resource):
 
     def get(self, user_id):
         """Get all reviews by a specific user"""
+        if not get_user_by_id(user_id):
+            raise NotFound(description="User not found")
         reviews = get_reviews_by_user(user_id)
         res = [
             {
