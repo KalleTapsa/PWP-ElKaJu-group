@@ -14,6 +14,7 @@ from PeculiarPlaces.utils import (
     get_user_by_id,
 )
 
+# Course example API used as a template for the file
 
 class Places(Resource):
     """Resource for handling places."""

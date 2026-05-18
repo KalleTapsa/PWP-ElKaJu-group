@@ -9,7 +9,7 @@ from flasgger import Swagger
 db = SQLAlchemy()
 cache = Cache()
 
-
+# Course example API used as a template for the file
 def create_app():
     """Create and configure the Flask application."""
     app = Flask(__name__)

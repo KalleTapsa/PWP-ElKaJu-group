@@ -24,6 +24,7 @@ from ..utils import (
     get_review_by_id,
 )
 
+# Course example API used as a template for the file
 
 # Report Place Resources
 class ReportPlaceById(Resource):

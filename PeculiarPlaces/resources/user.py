@@ -7,7 +7,7 @@ from PeculiarPlaces import db
 from PeculiarPlaces.authentication import login_required
 from PeculiarPlaces.models import User
 
-
+# Course example API used as a template for the file
 class Users(Resource):
     """Resource for handling user registration and deletion."""
 

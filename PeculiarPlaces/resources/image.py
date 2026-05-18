@@ -15,6 +15,8 @@ from ..utils import (
     get_user_by_id,
 )
 
+# Course example API used as a template for the file
+
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png"}
 IMAGE_CACHE = {}
 

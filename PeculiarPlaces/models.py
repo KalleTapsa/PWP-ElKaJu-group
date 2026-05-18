@@ -7,6 +7,7 @@ from sqlalchemy.engine import Engine
 
 from . import db
 
+# Course example API used as a template for the file
 
 @event.listens_for(Engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):

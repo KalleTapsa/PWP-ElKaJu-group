@@ -13,6 +13,7 @@ from ..utils import (
     get_user_by_id,
 )
 
+# Course example API used as a template for the file
 
 class ReviewById(Resource):
     """Resource for handling individual reviews by their ID"""

@@ -17,6 +17,8 @@ from .resources.report import (
 from .resources.review import PlaceReviews, ReviewById, ReviewsByUser
 from .resources.user import Users
 
+# Course example API used as a template for the file
+
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 api = Api(api_bp)
 
