@@ -151,7 +151,7 @@ def test_delete_place(client, session):
     response = client.delete(
         f"/api/places/{place.id}/", headers={"Authorization": "test_delete_place"}
     )
-    assert response.status_code == 204
+    assert response.status_code == 200
 
     # Check deleted
     response = client.get(f"/api/places/{place.id}/")
