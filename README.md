@@ -59,7 +59,7 @@ __Population Script:__
 DOCUMENTATION IN http://127.0.0.1:5000/apidocs/
 
 # DELIVERY 4
-*Navigate to client folder*
-npm install
-npm run dev
-*if api is running client will work properly*
+1. *Navigate to client folder*
+2. npm install
+3. npm run dev
+4. *if api is running client will work properly*
