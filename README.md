@@ -59,6 +59,8 @@ __Population Script:__
 DOCUMENTATION IN http://127.0.0.1:5000/apidocs/
 
 # DELIVERY 4
+
+# HOW TO RUN
 1. *Navigate to client folder*
 2. npm install
 3. npm run dev
