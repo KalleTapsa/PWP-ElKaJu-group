@@ -57,3 +57,9 @@ __Population Script:__
 "pytest-cov"
 
 DOCUMENTATION IN http://127.0.0.1:5000/apidocs/
+
+# DELIVERY 4
+*Navigate to client folder*
+npm install
+npm run dev
+*if api is running client will work properly*
